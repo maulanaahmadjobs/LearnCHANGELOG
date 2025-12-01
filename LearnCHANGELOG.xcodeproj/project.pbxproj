@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		573D78E32EDCA8EA007387FB /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 573D78E22EDCA8DC007387FB /* .gitignore */; };
+		573D79352EDCA92B007387FB /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = 573D79342EDCA928007387FB /* CHANGELOG.md */; };
+		573D79392EDCA972007387FB /* RELEASE.md in Resources */ = {isa = PBXBuildFile; fileRef = 573D79382EDCA952007387FB /* RELEASE.md */; };
+		573D793B2EDCA99D007387FB /* .release-please-manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 573D793A2EDCA99A007387FB /* .release-please-manifest.json */; };
+		573D793D2EDCA9D0007387FB /* release-please-config.json in Resources */ = {isa = PBXBuildFile; fileRef = 573D793C2EDCA9C8007387FB /* release-please-config.json */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		573D78BB2EDCA539007387FB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +35,11 @@
 		573D78A42EDCA536007387FB /* LearnCHANGELOG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LearnCHANGELOG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		573D78BA2EDCA539007387FB /* LearnCHANGELOGTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnCHANGELOGTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		573D78C42EDCA539007387FB /* LearnCHANGELOGUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnCHANGELOGUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		573D78E22EDCA8DC007387FB /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		573D79342EDCA928007387FB /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = "<group>"; };
+		573D79382EDCA952007387FB /* RELEASE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = RELEASE.md; sourceTree = "<group>"; };
+		573D793A2EDCA99A007387FB /* .release-please-manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ".release-please-manifest.json"; sourceTree = "<group>"; };
+		573D793C2EDCA9C8007387FB /* release-please-config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "release-please-config.json"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -56,6 +69,11 @@
 		573D78C72EDCA539007387FB /* LearnCHANGELOGUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = LearnCHANGELOGUITests;
+			sourceTree = "<group>";
+		};
+		573D78D82EDCA815007387FB /* .github */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = .github;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -88,6 +106,12 @@
 		573D789B2EDCA536007387FB = {
 			isa = PBXGroup;
 			children = (
+				573D793C2EDCA9C8007387FB /* release-please-config.json */,
+				573D793A2EDCA99A007387FB /* .release-please-manifest.json */,
+				573D79382EDCA952007387FB /* RELEASE.md */,
+				573D79342EDCA928007387FB /* CHANGELOG.md */,
+				573D78E22EDCA8DC007387FB /* .gitignore */,
+				573D78D82EDCA815007387FB /* .github */,
 				573D78A62EDCA536007387FB /* LearnCHANGELOG */,
 				573D78BD2EDCA539007387FB /* LearnCHANGELOGTests */,
 				573D78C72EDCA539007387FB /* LearnCHANGELOGUITests */,
@@ -122,6 +146,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				573D78A62EDCA536007387FB /* LearnCHANGELOG */,
+				573D78D82EDCA815007387FB /* .github */,
 			);
 			name = LearnCHANGELOG;
 			packageProductDependencies = (
@@ -225,6 +250,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				573D78E32EDCA8EA007387FB /* .gitignore in Resources */,
+				573D793D2EDCA9D0007387FB /* release-please-config.json in Resources */,
+				573D79352EDCA92B007387FB /* CHANGELOG.md in Resources */,
+				573D793B2EDCA99D007387FB /* .release-please-manifest.json in Resources */,
+				573D79392EDCA972007387FB /* RELEASE.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
