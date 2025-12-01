@@ -136,8 +136,8 @@ class HomeViewController: UIViewController {
     // MARK: - Actions
     
     @objc private func settingsButtonTapped() {
-        let settingsVC = SettingsViewController()
-        let navController = UINavigationController(rootViewController: settingsVC)
-        present(navController, animated: true)
+//        let settingsVC = SettingsViewController()
+//        let navController = UINavigationController(rootViewController: settingsVC)
+//        present(navController, animated: true)
     }
 }

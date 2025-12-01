@@ -42,7 +42,10 @@ jobs:
       
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-      
+
+      - name: List simulators
+        run: xcrun simctl list devices
+
       - name: Cache DerivedData
         uses: actions/cache@v4
         with:
@@ -55,12 +58,15 @@ jobs:
           xcodebuild -version
           swift --version
       
+      - name: Install xcpretty #Untuk mendapatkan pesan error lengkapnya
+        run: gem install xcpretty
+
       - name: Run Tests
         run: |
           xcodebuild clean test \
             -project LearnCHANGELOG.xcodeproj \
             -scheme LearnCHANGELOG \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -destination "platform=iOS Simulator,name=iPhone 14,OS=latest"
             -skip-testing:LearnCHANGELOGUITests \
             -only-testing:LearnCHANGELOGTests \
             CODE_SIGN_IDENTITY="" \
