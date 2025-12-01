@@ -62,6 +62,7 @@ jobs:
             -scheme LearnCHANGELOG \
             -destination "platform=iOS Simulator,name=iPhone 16" \
             -skip-testing:LearnCHANGELOGUITests \
+            -only-testing:LearnCHANGELOGTests \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
