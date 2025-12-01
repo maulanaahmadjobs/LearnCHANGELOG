@@ -54,7 +54,7 @@ jobs:
       # Simpan ID ke variabel environment GitHub #echo "SIMULATOR_ID=$SIM" >> $GITHUB_ENV
       - name: Set simulator
         run: |
-          SIM=$(xcrun simctl list devices | grep "iPhone 16 (" | grep -v unavailable | head -1 | awk -F '[()]' '{print $2}')
+          SIM=$(xcrun simctl list devices | grep "iPhone 15 (" | grep -v unavailable | head -1 | awk -F '[()]' '{print $2}')
           echo "SIMULATOR_ID=$SIM" >> $GITHUB_ENV
 
       - name: Cache DerivedData
@@ -77,7 +77,7 @@ jobs:
           xcodebuild clean test \
             -project LearnCHANGELOG.xcodeproj \
             -scheme LearnCHANGELOG \
-            -destination "platform=iOS Simulator,id=${SIMULATOR_ID}"
+            -destination "platform=iOS Simulator,id=${SIMULATOR_ID}" \
             -skip-testing:LearnCHANGELOGUITests \
             -only-testing:LearnCHANGELOGTests \
             CODE_SIGN_IDENTITY="" \
