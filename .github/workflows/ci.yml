@@ -35,10 +35,13 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Select Xcode ${{ matrix.xcode }}
-        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer xcodebuild -downloadPlatform iOS
+        run: sudo xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
 
       - name: List available devices
         run: xcrun simctl list devices available
+
+      - name: Download iOS Platform                            # this definitivly make it work
+        run: xcodebuild -downloadPlatform iOS
 
       - name: Set IgnoreFileSystemDeviceInodeChanges flag
         run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
