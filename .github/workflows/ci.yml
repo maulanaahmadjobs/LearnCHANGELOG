@@ -54,7 +54,21 @@ jobs:
       # Simpan ID ke variabel environment GitHub #echo "SIMULATOR_ID=$SIM" >> $GITHUB_ENV
       - name: Set simulator
         run: |
-          SIM=$(xcrun simctl list devices | grep -E "iPhone 15 " | grep -v unavailable | tail -1 | awk -F '[()]' '{print $(NF-1)}')
+          # Cari iPhone simulator yang available (prioritas: 16, 15, 14, atau apapun yang tersedia)
+          SIM=$(xcrun simctl list devices available | \
+            grep -E "iPhone (16|15|14|13)" | \
+            grep -v "unavailable" | \
+            head -1 | \
+            sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+          
+          if [ -z "$SIM" ]; then
+            echo "Simulator tidak ditemukan!"
+            echo "Available devices:"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          
+          echo "Using simulator: $SIM"
           echo "SIMULATOR_ID=$SIM" >> $GITHUB_ENV
 
       - name: Cache DerivedData
