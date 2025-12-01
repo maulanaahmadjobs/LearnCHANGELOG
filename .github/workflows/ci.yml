@@ -54,8 +54,18 @@ jobs:
       # Simpan ID ke variabel environment GitHub #echo "SIMULATOR_ID=$SIM" >> $GITHUB_ENV
       - name: Set simulator
         run: |
-          SIM=$(xcrun simctl list devices | grep "iPhone 15 (" | grep -v unavailable | head -1 | awk -F '[()]' '{print $2}')
+          SIM=$(xcrun simctl list devices | grep -E "iPhone 15 " | grep -v unavailable | tail -1 | awk -F '[()]' '{print $(NF-1)}')
           echo "SIMULATOR_ID=$SIM" >> $GITHUB_ENV
+
+      - name: Validate simulator ID
+        run: |
+          if [ -z "$SIMULATOR_ID" ]; then
+          echo "No simulator found! List of devices:"
+          xcrun simctl list devices
+          exit 1
+       fi
+          echo "Using simulator: $SIMULATOR_ID"
+
 
       - name: Cache DerivedData
         uses: actions/cache@v4
