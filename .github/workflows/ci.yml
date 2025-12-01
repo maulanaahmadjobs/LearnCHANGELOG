@@ -40,6 +40,12 @@ jobs:
       - name: List simulators
         run: xcrun simctl list devices
 
+      - name: Pick Simulator ID
+        run: |
+          SIM=$(xcrun simctl list devices | grep "iPhone 16 Pro (" | grep -v unavailable | head -1 | awk -F '[()]' '{print $2}')
+          echo "SIMULATOR_ID=$SIM" >> $GITHUB_ENV
+
+
       - name: Cache DerivedData
         uses: actions/cache@v4
         with:
@@ -60,7 +66,7 @@ jobs:
           xcodebuild clean test \
             -project LearnCHANGELOG.xcodeproj \
             -scheme LearnCHANGELOG \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4' \
+            -destination "id=$SIMULATOR_ID" \
             -skip-testing:LearnCHANGELOGUITests \
             -only-testing:LearnCHANGELOGTests \
             CODE_SIGN_IDENTITY="" \
