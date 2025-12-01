@@ -6,35 +6,43 @@
 # Created by west on 30/11/25.
 #
 #
-# ci.yml
-# LearnCHANGELOG
-#
-# Created by west on 30/11/25.
-#
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: ["*"]
-
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
-
 permissions:
   contents: read
-
 jobs:
-  # Job 1: Test di berbagai Xcode versions
   test:
     name: Test (Xcode ${{ matrix.xcode }})
-    runs-on: macos-15
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        xcode: ["16.4", "16.2"]
+        include:
+          # Xcode 16.x (macOS 15)
+          - xcode: "16.2"
+            os: macos-15
+            ios: "18.0"
+            fallback_ios: "17.5"
+          - xcode: "16.0"
+            os: macos-15
+            ios: "18.0"
+            fallback_ios: "17.5"
+          # Xcode 15.x (macOS 14)
+          - xcode: "15.4"
+            os: macos-14
+            ios: "17.5"
+            fallback_ios: "17.2"
+          - xcode: "15.2"
+            os: macos-14
+            ios: "17.2"
+            fallback_ios: "17.0"
     
     steps:
       - name: Checkout
@@ -42,71 +50,72 @@ jobs:
       
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-
-      - name: List simulators
-        run: xcrun simctl list devices
-
-      # grep "iPhone 16 (" #Filter simulator yang namanya mengandung “iPhone 16 (“
-      # grep -v unavailable #Hilangkan simulator yang “unavailable”
-      # head -1 Ambil simulator pertama
-      # awk -F '[()]' '{print $2}' #Mengambil teks antara tanda kurung pertama #iPhone 16 (A2BF07D1-D6FB-41BE-AE0E-F0D8F89C31EF) 
-      # SIMULATOR_ID #A2BF07D1-D6FB-41BE-AE0E-F0D8F89C31EF
-      # Simpan ID ke variabel environment GitHub #echo "SIMULATOR_ID=$SIM" >> $GITHUB_ENV
-      - name: Set simulator
+      
+      - name: Show Environment
         run: |
-          # Cari iPhone simulator yang available (prioritas: 16, 15, 14, atau apapun yang tersedia)
-          SIM=$(xcrun simctl list devices available | \
-            grep -E "iPhone (16|15|14|13)" | \
-            grep -v "unavailable" | \
-            head -1 | \
-            sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
-          
-          if [ -z "$SIM" ]; then
-            echo "Simulator tidak ditemukan!"
-            echo "Available devices:"
-            xcrun simctl list devices available
-            exit 1
-          fi
-          
-          echo "Using simulator: $SIM"
-          echo "SIMULATOR_ID=$SIM" >> $GITHUB_ENV
-
+          echo "Environment Info"
+          echo "Xcode: ${{ matrix.xcode }}"
+          echo "macOS: ${{ matrix.os }}"
+          echo "Target iOS: ${{ matrix.ios }}"
+          echo ""
+          xcodebuild -version
+          swift --version
+      
+      - name: Show Available Destinations
+        run: |
+          echo "Available iOS Runtimes:"
+          xcrun simctl list runtimes iOS
+          echo ""
+          echo "Available Destinations:"
+          xcodebuild -project LearnCHANGELOG.xcodeproj \
+            -scheme LearnCHANGELOG \
+            -showdestinations
+      
       - name: Cache DerivedData
         uses: actions/cache@v4
         with:
           path: ~/Library/Developer/Xcode/DerivedData
-          key: dd-${{ matrix.xcode }}-${{ hashFiles('**/*.swift') }}
+          key: dd-${{ matrix.os }}-${{ matrix.xcode }}-${{ hashFiles('**/*.swift') }}
+          restore-keys: |
+            dd-${{ matrix.os }}-${{ matrix.xcode }}-
+            dd-${{ matrix.os }}-
       
-      - name: Show Environment
-        run: |
-          echo "Xcode: ${{ matrix.xcode }}"
-          xcodebuild -version
-          swift --version
-      
-      - name: Install xcpretty #Untuk mendapatkan pesan error lengkapnya
+      - name: Install xcpretty
         run: gem install xcpretty
-
+      
       - name: Run Tests
         run: |
+          # Try primary iOS version
           xcodebuild clean test \
             -project LearnCHANGELOG.xcodeproj \
             -scheme LearnCHANGELOG \
-            -destination "platform=iOS Simulator,id=${SIMULATOR_ID}" \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=${{ matrix.ios }}' \
             -skip-testing:LearnCHANGELOGUITests \
             -only-testing:LearnCHANGELOGTests \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO | xcpretty || \
+          # Fallback to secondary iOS version
+          xcodebuild clean test \
+            -project LearnCHANGELOG.xcodeproj \
+            -scheme LearnCHANGELOG \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=${{ matrix.fallback_ios }}' \
+            -skip-testing:LearnCHANGELOGUITests \
+            -only-testing:LearnCHANGELOGTests \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO | xcpretty
       
       - name: Upload Logs (if failed)
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-logs-xcode-${{ matrix.xcode }}
-          path: "*.log"
+          name: test-logs-${{ matrix.os }}-xcode-${{ matrix.xcode }}
+          path: |
+            *.log
+            ~/Library/Logs/DiagnosticReports/*.crash
           retention-days: 7
-
-  # Job 2: Release Build (hanya di main branch)
+  
   release:
     name: Release Build
     runs-on: macos-15
@@ -117,8 +126,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Select Xcode 16.4
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      - name: Select Xcode 16.2
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app
       
       - name: Build Release Archive
         run: |
