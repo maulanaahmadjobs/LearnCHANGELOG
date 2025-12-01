@@ -60,12 +60,12 @@ jobs:
       - name: Validate simulator ID
         run: |
           if [ -z "$SIMULATOR_ID" ]; then
-          echo "No simulator found! List of devices:"
-          xcrun simctl list devices
-          exit 1
-       fi
-          echo "Using simulator: $SIMULATOR_ID"
-
+            echo "No simulator found! List of devices:"
+            xcrun simctl list devices
+            exit 1
+         fi
+         
+         echo "Using simulator: $SIMULATOR_ID"
 
       - name: Cache DerivedData
         uses: actions/cache@v4
