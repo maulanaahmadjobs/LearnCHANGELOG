@@ -9,11 +9,9 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - "*"
+    branches: ["*"]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -24,28 +22,46 @@ permissions:
 
 jobs:
   build:
-    name: Build and Test
+    name: Build (Xcode ${{ matrix.xcode }} - ${{ matrix.platform }})
     runs-on: macos-15
+    strategy:
+      matrix:
+        command: [build, test]  # "build" atau "test"
+        platform: [IOS, MACOS]
+        xcode: ["16.4", "16.2"]
+        include:
+          - platform: IOS
+            destination: "platform=iOS Simulator"
+          - platform: MACOS  
+            destination: "platform=macOS"
+    
     steps:
       - uses: actions/checkout@v4
       
-      - name: Select Xcode 16.4
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app
-
-      - name: Show Xcode version
-        run: xcodebuild -version
-        
-      - name: List available simulators
-        run: xcrun xctrace list devices
+      - name: Select Xcode ${{ matrix.xcode }}
+        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       
-      - name: Build
+      - name: Show Environment
         run: |
-         xcodebuild clean build \
+          echo "Xcode: ${{ matrix.xcode }}"
+          echo "Platform: ${{ matrix.platform }}"
+          echo "Command: ${{ matrix.command }}"
+          xcodebuild -version
+      
+      - name: Install iOS Simulator Runtime (if needed)
+        if: matrix.platform == 'IOS' && matrix.xcode >= '16.0'
+        run: |
+          sudo xcodebuild -downloadPlatform iOS 2>/dev/null || true
+          sleep 5
+      
+      # FIXED: Build command yang benar
+      - name: Run ${{ matrix.command }}
+        run: |
+          xcodebuild clean ${{ matrix.command }} \
             -project LearnCHANGELOG.xcodeproj \
             -scheme LearnCHANGELOG \
-            -destination "platform=iOS Simulator" \
+            -destination "${{ matrix.destination }}" \
             CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO
+            CODE_SIGNING_REQUIRED=NO \
             SWIFT_VERSION=5.0 \
             IPHONEOS_DEPLOYMENT_TARGET=15.0
-            
