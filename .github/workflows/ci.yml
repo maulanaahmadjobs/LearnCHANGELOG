@@ -1,10 +1,10 @@
 #
-//  ci.yml
-//  LearnCHANGELOG
-//
-//  Created by west on 30/11/25.
-//
-
+#
+# ci.yml
+# LearnCHANGELOG
+#
+# Created by west on 30/11/25.
+#
 name: CI
 
 on:
