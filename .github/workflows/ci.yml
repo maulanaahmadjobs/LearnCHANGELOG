@@ -40,10 +40,22 @@ jobs:
       - name: List simulators
         run: xcrun simctl list devices
 
-      - name: Pick Simulator ID
+      - name: Pick Simulator Destination
         run: |
-          SIM=$(xcrun simctl list devices | grep "iPhone 16 Pro (" | grep -v unavailable | head -1 | awk -F '[()]' '{print $2}')
-          echo "SIMULATOR_ID=$SIM" >> $GITHUB_ENV
+          set -euo pipefail
+          
+          # Ambil simulator iPhone apa saja yang available (tidak unavailable)
+          DEST="$(xcrun simctl list devices | grep -i iphone | grep -v unavailable | head -1 | awk -F '[()]' '{print "platform=iOS Simulator,id="$2}')"
+          
+          if [ -z "$DEST" ]; then
+            echo "ERROR: Tidak ada iPhone simulator yang tersedia untuk Xcode ini."
+            echo "Daftar semua devices:"
+            xcrun simctl list devices
+            exit 1
+          fi
+          
+          echo "Menggunakan destination: $DEST"
+          echo "DESTINATION=$DEST" >> $GITHUB_ENV
 
 
       - name: Cache DerivedData
@@ -66,7 +78,7 @@ jobs:
           xcodebuild clean test \
             -project LearnCHANGELOG.xcodeproj \
             -scheme LearnCHANGELOG \
-            -destination "id=$SIMULATOR_ID" \
+            -destination "$DESTINATION" \
             -skip-testing:LearnCHANGELOGUITests \
             -only-testing:LearnCHANGELOGTests \
             CODE_SIGN_IDENTITY="" \
