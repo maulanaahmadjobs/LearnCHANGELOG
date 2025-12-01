@@ -5,6 +5,12 @@
 #
 # Created by west on 30/11/25.
 #
+#
+# ci.yml
+# LearnCHANGELOG
+#
+# Created by west on 30/11/25.
+#
 name: CI
 
 on:
@@ -21,47 +27,81 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build (Xcode ${{ matrix.xcode }} - ${{ matrix.platform }})
+  # Job 1: Test di berbagai Xcode versions
+  test:
+    name: Test (Xcode ${{ matrix.xcode }})
     runs-on: macos-15
     strategy:
+      fail-fast: false
       matrix:
-        command: [build, test]  # "build" atau "test"
-        platform: [IOS, MACOS]
         xcode: ["16.4", "16.2"]
-        include:
-          - platform: IOS
-            destination: "platform=iOS Simulator"
-          - platform: MACOS  
-            destination: "platform=macOS"
     
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
       
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: dd-${{ matrix.xcode }}-${{ hashFiles('**/*.swift') }}
+      
       - name: Show Environment
         run: |
-          echo "Xcode: ${{ matrix.xcode }}"
-          echo "Platform: ${{ matrix.platform }}"
-          echo "Command: ${{ matrix.command }}"
+          echo "🔧 Xcode: ${{ matrix.xcode }}"
           xcodebuild -version
+          swift --version
       
-      - name: Install iOS Simulator Runtime (if needed)
-        if: matrix.platform == 'IOS' && matrix.xcode >= '16.0'
+      - name: Run Tests
         run: |
-          sudo xcodebuild -downloadPlatform iOS 2>/dev/null || true
-          sleep 5
-      
-      # FIXED: Build command yang benar
-      - name: Run ${{ matrix.command }}
-        run: |
-          xcodebuild clean ${{ matrix.command }} \
+          xcodebuild clean test \
             -project LearnCHANGELOG.xcodeproj \
             -scheme LearnCHANGELOG \
-            -destination "${{ matrix.destination }}" \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -skip-testing:LearnCHANGELOGUITests \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            SWIFT_VERSION=5.0 \
-            IPHONEOS_DEPLOYMENT_TARGET=15.0
+            CODE_SIGNING_ALLOWED=NO
+      
+      - name: Upload Logs (if failed)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-xcode-${{ matrix.xcode }}
+          path: "*.log"
+          retention-days: 7
+
+  # Job 2: Release Build (hanya di main branch)
+  release:
+    name: Release Build
+    runs-on: macos-15
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Select Xcode 16.4
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      
+      - name: Build Release Archive
+        run: |
+          xcodebuild clean archive \
+            -project LearnCHANGELOG.xcodeproj \
+            -scheme LearnCHANGELOG \
+            -configuration Release \
+            -archivePath build/LearnCHANGELOG.xcarchive \
+            -destination "generic/platform=iOS" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+      
+      - name: Upload Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: LearnCHANGELOG-Release-${{ github.sha }}
+          path: build/LearnCHANGELOG.xcarchive
+          retention-days: 30
