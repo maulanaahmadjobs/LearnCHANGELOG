@@ -40,7 +40,7 @@ jobs:
       - name: List available devices
         run: xcrun simctl list devices available
 
-      - name: Download iOS Platform                            # this definitivly make it work
+      - name: Download iOS Platform
         run: xcodebuild -downloadPlatform iOS
 
       - name: Set IgnoreFileSystemDeviceInodeChanges flag
