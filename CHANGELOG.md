@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.2.1...v0.2.2) (2025-12-02)
+
+
+### Bug Fixes
+
+* commet xcode 16.2, 16.0 ([fdda1ca](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/fdda1ca864838d7a93e5bae923dc52bc94d9845f))
+* commet xcode 16.2, 16.0 ([09a34a8](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/09a34a867a466a6e2d092b2be4f8fc7eb515bb61))
+
 ## [0.2.1](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.2.0...v0.2.1) (2025-12-02)
 
 
