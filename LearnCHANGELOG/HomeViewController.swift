@@ -83,7 +83,7 @@ class HomeViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        title = "Home"
+        title = "Rumah"
         
         view.addSubview(iconImageView)
         view.addSubview(titleLabel)
