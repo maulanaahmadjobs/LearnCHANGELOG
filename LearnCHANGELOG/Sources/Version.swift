@@ -9,7 +9,7 @@ import Foundation
 public enum AppVersion {
     /// The current version of the application
     /// This value is automatically updated by release-please
-    public static let current = "0.2.0" // x-release-please-version
+    public static let current = "0.2.1" // x-release-please-version
     
     /// The build number
     public static var build: String {
