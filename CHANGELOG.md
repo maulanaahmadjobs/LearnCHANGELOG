@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.3](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.2.2...v0.2.3) (2025-12-02)
+
+
+### Bug Fixes
+
+* add commnet apakah github.ref sama dengan refs/heads/main ([9c5c481](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/9c5c4818fad6d9a9eea6e521e49023b6f873187f))
+* add commnet apakah github.ref sama dengan refs/heads/main ([6c9815e](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/6c9815e92178dda62a6d006bcd419ebd34e0d932))
+
 ## [0.2.2](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.2.1...v0.2.2) (2025-12-02)
 
 
