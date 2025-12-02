@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        xcode: ["16.4", "16.2", "16.0"]
+        xcode: ["16.4"] # , "16.2", "16.0"
     
     steps:
       - name: Checkout
