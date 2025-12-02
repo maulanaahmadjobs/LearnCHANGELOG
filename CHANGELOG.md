@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.2.0...v0.2.1) (2025-12-02)
+
+
+### Bug Fixes
+
+* change file name RELEASE to RELEASE-GUIDE and add guide release ([d4dfdff](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/d4dfdff00d55475cc474f636cccc0f820759a20f))
+* change file name RELEASE to RELEASE-GUIDE and add guide release ([4f91cd1](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/4f91cd19e2049fc528eadc6d116ab4c2ef58d12d))
+
 ## [0.2.0](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.1.0...v0.2.0) (2025-12-01)
 
 
