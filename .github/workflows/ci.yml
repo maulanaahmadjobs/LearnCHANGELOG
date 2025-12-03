@@ -167,7 +167,7 @@ jobs:
             -project LearnCHANGELOG.xcodeproj \
             -scheme LearnCHANGELOG \
             -destination "id=$SIMULATOR_ID" \
-            -configuration ${{ needs.setup.outputs.build-config }} \ # Gunakan konfigurasi build dari job setup
+            -configuration ${{ needs.setup.outputs.build-config }} \
             CODE_SIGN_IDENTITY="" \ 
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO | xcpretty --color --log-path build-xcode-${{ matrix.xcode }}.log | tee build-output.log || {
