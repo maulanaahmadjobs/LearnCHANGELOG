@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.4.0...v0.5.0) (2025-12-03)
+
+
+### Features
+
+* isengberhadia ([#22](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/22)) ([26f0a62](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/26f0a62cb0f07125bf06b7e543c783d4e3f9f400))
+
 ## [0.4.0](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.3.0...v0.4.0) (2025-12-03)
 
 
