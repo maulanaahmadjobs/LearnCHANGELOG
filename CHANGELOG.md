@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.3.0...v0.4.0) (2025-12-03)
+
+
+### Features
+
+* menambahkan membuar pull request ([#20](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/20)) ([8647614](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/864761478bccca156a8211074a3a1c73f41a9067))
+
 ## [0.3.0](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.2.4...v0.3.0) (2025-12-03)
 
 
