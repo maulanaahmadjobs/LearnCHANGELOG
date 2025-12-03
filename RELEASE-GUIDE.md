@@ -75,7 +75,8 @@ Buat trigger release-please workflow secara manual:
 - `.release-please-manifest.json`: Tracking versi saat ini
 - `.github/workflows/release.yml`: Workflow GitHub Actions untuk release
 
-## Cara Kerja di Workflow
+# Membuat Pull Request
+
 
 ### **Branch `featur` PR ke `main` branch (trigger release):**
 
