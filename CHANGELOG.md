@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.2.4...v0.3.0) (2025-12-03)
+
+
+### Features
+
+* add Rumah Badut ([#18](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/18)) ([caf4769](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/caf4769597722fcac8313f0a7a9297a34231c76a))
+
 ## [0.2.4](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.2.3...v0.2.4) (2025-12-03)
 
 
