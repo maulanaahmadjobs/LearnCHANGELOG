@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.4](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.2.3...v0.2.4) (2025-12-03)
+
+
+### Bug Fixes
+
+* change Home to Rumah ([8dceedb](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/8dceedb822cf8d90f24acbc6877fd66f219a8ebe))
+* change Home to Rumah ([74cf9e8](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/74cf9e86f88af134c96182fde17eac01752a64c4))
+
 ## [0.2.3](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.2.2...v0.2.3) (2025-12-02)
 
 
