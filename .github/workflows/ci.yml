@@ -9,9 +9,15 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [
+      main, # production
+      develop, # staging
+      feature/*, # feature branches
+      hotfix/* # hotfix branches
+      ]
+
   pull_request:
-    branches: ["*"]
+    branches: ["main", "develop"]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -20,101 +26,298 @@ concurrency:
 permissions:
   contents: read
 
+# ENVIRONMENT VARIABLES
+env:
+  LC_ALL: en_US.UTF-8
+  LANG: en_US.UTF-8
+  PROJECT_NAME: "LearnCHANGELOG.xcodeproj"
+  BUILD_SCHEME: "LearnCHANGELOG"
+  BUILD_CONFIG: "Debug"
+  IS_PRODUCTION: "false" # default value
+
 jobs:
-  # Job 1: Test di berbagai Xcode versions
-  test:
-    name: Test (Xcode ${{ matrix.xcode }})
+  # Job 0: Setup environment berdasarkan branch
+  setup:
+    name: Determine Environment
+    runs-on: ubuntu-latest
+    outputs:
+      build-config: ${{ steps.determine-config.outputs.build-config }}
+      simulator-name: ${{ steps.determine-config.outputs.simulator-name }}
+      is-production: ${{ steps.determine-config.outputs.is-production }}
+      environment: ${{ steps.determine-config.outputs.environment }}
+
+    steps:
+      - name: Determine Environment Configuration # Tentukan environment berdasarkan branch
+        id: determine-config # langkah untuk menentukan konfigurasi
+        run: |
+          echo "Analyzing branch: ${{ github.ref }}"
+
+           # Ekstrak branch name dari ref
+          BRANCH_NAME="${{ github.ref_name }}"
+          echo "Branch name: $BRANCH_NAME"
+
+          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
+            echo "PRODUCTION - main branch"
+            echo "build-config=Release" >> $GITHUB_OUTPUT
+            echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT
+            echo "is-production=true" >> $GITHUB_OUTPUT
+
+          elif [[ "${GITHUB_REF##*/}" == "develop" ]]; then
+            echo "STAGING - develop branch"
+            echo "build-config=staging" >> $GITHUB_OUTPUT
+            echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT 
+            echo "is-production=false" >> $GITHUB_OUTPUT
+
+          elif [[ "${GITHUB_REF##*/}" == ^feature/ ]]; then
+            echo "FEATURE - feature branch"
+            echo "build-config=Debug" >> $GITHUB_OUTPUT
+            echo "simulator-name=iPhone 16" >> $GITHUB_OUTPUT
+            echo "is-production=false" >> $GITHUB_OUTPUT
+
+          elif [[ "${GITHUB_REF##*/}" == hotfix/* ]]; then
+            echo "HOTFIX - hotfix branch"
+            echo "build-config=Release" >> $GITHUB_OUTPUT
+            echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT
+            echo "is-production=true" >> $GITHUB_OUTPUT
+
+          else
+            echo "UNKNOWN branch type" # default to Debug
+            echo "build-config=Debug" >> $GITHUB_OUTPUT
+            echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT
+            echo "is-production=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "Configuration determined successfully"
+
+  # Job 1: Test di berbagai Xcode versions     
+  test-unit:
+    name: Unit Testing (Xcode ${{ matrix.xcode }}) # Menjalankan unit tests di berbagai versi Xcode
     runs-on: macos-15
+    needs: setup # menentukan environment berdasarkan branch
     strategy:
       fail-fast: false
       matrix:
         xcode: ["16.4"] # , "16.2", "16.0"
-    
+    env:
+      BUILD_CONFIG: ${{ needs.setup.outputs.build-config }}
+      SIMULATOR_NAME: ${{ needs.setup.outputs.simulator-name }}
+
     steps:
-      - name: Checkout
+      - name: Checkout # Checkout kode sumber
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Untuk mendapatkan semua history untuk changelog
       
+      - name: Show Build Configuration # Menampilkan konfigurasi build yang digunakan
+        run: |
+          echo "Build Configuration: $BUILD_CONFIG"
+          echo "Environment: ${{ needs.setup.outputs.environment }}"
+          echo "Simulator Name: $SIMULATOR_NAME"
+          echo "Is Production: ${{ needs.setup.outputs.is-production }}"
+          echo "Xcode Version: ${{ matrix.xcode }}"
+
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
 
       - name: List available devices
         run: xcrun simctl list devices available
 
-      - name: Download iOS Platform
-        run: xcodebuild -downloadPlatform iOS
+      - name: Download iOS Platform # Pastikan platform iOS terunduh
+        run: xcodebuild -downloadPlatform iOS # Mengunduh platform iOS jika belum ada
 
-      - name: Set IgnoreFileSystemDeviceInodeChanges flag
+      - name: Set IgnoreFileSystemDeviceInodeChanges flag # Mengatasi masalah simulator yang sering crash
         run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
 
-      - name: Pick Simulator ID
+      - name: Pick Simulator ID # Memilih simulator iPhone 16 Pro yang tersedia
         run: |
-          SIM=$(xcrun simctl list devices | grep "iPhone 16 Pro (" | grep -v unavailable | head -1 | awk -F '[()]' '{print $2}')
+          SIM=$(xcrun simctl list devices | grep "$SIMULATOR_NAME (" | grep -v unavailable | head -1 | awk -F '[()]' '{print $2}')
           echo "SIMULATOR_ID=$SIM" >> $GITHUB_ENV
 
+          # Fallback jika simulator tidak ditemukan
+          if [ -z "$SIM" ]; then
+            echo "Simulator $SIMULATOR_NAME not found, using fallback"
+            SIM=$(xcrun simctl list devices | grep "iPhone 16 Pro (" | grep -v unavailable | head -1 | awk -F '[()]' '{print $2}')
+          fi
+          
+          echo "SIMULATOR_ID=$SIM" >> $GITHUB_ENV
+          echo "Selected Simulator ID: $SIM ($SIMULATOR_NAME)"
 
-      - name: Cache DerivedData
+      - name: Cache DerivedData # Cache untuk mempercepat build
         uses: actions/cache@v4
         with:
           path: ~/Library/Developer/Xcode/DerivedData
           key: dd-${{ matrix.xcode }}-${{ hashFiles('**/*.swift') }}
       
-      - name: Show Environment
+      - name: Show Environment # Menampilkan versi Xcode dan Swift
         run: |
           echo "Xcode: ${{ matrix.xcode }}"
-          xcodebuild -version
-          swift --version
+          xcodebuild -version # Menampilkan versi Xcode
+          swift --version # Menampilkan versi Swift
+          echo "Project: LearnCHANGELOG.xcodeproj"
+          echo "Scheme: LearnCHANGELOG"
+          echo "Build Configuration: $BUILD_CONFIG"
       
       - name: Install xcpretty #Untuk mendapatkan pesan error lengkapnya
         run: gem install xcpretty
 
-      - name: Run Tests
+      - name: Build Project # Membangun proyek untuk memastikan tidak ada error build
         run: |
+          echo "Building project for validation..."
+          xcodebuild build \
+            -project LearnCHANGELOG.xcodeproj \
+            -scheme LearnCHANGELOG \
+            -destination "id=$SIMULATOR_ID" \
+            -configuration ${{ needs.setup.outputs.build-config }} \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO | xcpretty --color --log-path build-xcode-${{ matrix.xcode }}.log | tee build-output.log || {
+              echo "Build failed. Check the build log for details."
+              exit 1
+            }
+
+      - name: Run Unit Tests # UNIT TESTING!
+        run: |
+          echo "Running unit tests..."
           xcodebuild clean test \
             -project LearnCHANGELOG.xcodeproj \
             -scheme LearnCHANGELOG \
             -destination "id=$SIMULATOR_ID" \
+            -configuration ${{ needs.setup.outputs.build-config }} \
             -skip-testing:LearnCHANGELOGUITests \
             -only-testing:LearnCHANGELOGTests \
-            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO | xcpretty --test --color --report html --output test-report.html \ && exit ${PIPESTATUS[0]}
       
-      - name: Upload Logs (if failed)
-        if: failure()
+      - name: Upload Test Report # Unggah laporan pengujian sebagai artefak
         uses: actions/upload-artifact@v4
         with:
-          name: test-logs-xcode-${{ matrix.xcode }}
-          path: "*.log"
-          retention-days: 7
+          name: test-report-xcode-${{ matrix.xcode }}-${{ env.BUILD_CONFIG }}
+          path: test-report.html
+          retention-days: 7 # Simpan artefak selama 7 hari
+
+      - name: Upload Logs (if failed) # Unggah log jika terjadi kegagalan
+        if: failure() # Hanya jika job gagal
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-xcode-${{ matrix.xcode }} # Nama artefak log
+          path: |
+           *.log
+           build.log # Sesuaikan dengan lokasi log file
+          retention-days: 7 # Simpan log selama 7 hari
 
   # Job 2: Release Build (hanya di main branch)
-  release:
-    name: Release Build
-    runs-on: macos-15
-    if: github.ref == 'refs/heads/main' #apakah github.ref sama dengan refs/heads/main
-    needs: test
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  release: # Release Build untuk produksi
+    name: Release Build # on main branch
+    runs-on: macos-15 # Menjalankan di macOS terbaru
+    needs: [setup, test-unit] # pastikan job test-unit selesai terlebih dahulu
+    #if: github.ref == 'refs/heads/main' #apakah github.ref sama dengan refs/heads/main
+    if: needs.setup.outputs.is-production == 'true' # Hanya jalankan jika ini adalah build produksi
+
+    env:
+      BUILD_CONFIG: ${{ needs.setup.outputs.build-config }}
       
-      - name: Select Xcode 16.4
+    steps:
+      - name: Checkout # Checkout kode sumber
+        uses: actions/checkout@v4
+
+      - name: Show Release Info
+        run: |
+          echo "RELEASE BUILD INFORMATION"
+          echo "Environment: ${{ needs.setup.outputs.environment }}"
+          echo "Build Configuration: $BUILD_CONFIG"
+          echo "Branch: ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
+      
+      - name: Select Xcode 16.4 # Pilih Xcode 16.4 untuk build rilis
         run: sudo xcode-select --switch /Applications/Xcode_16.4.app
       
-      - name: Build Release Archive
+      - name: Validate Release Build # Build validasi sebelum archip
         run: |
+          echo "Validating release build configuration..."
+          excodebuild build \
+            -project LearnCHANGELOG.xcodeproj \
+            -scheme LearnCHANGELOG \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO | tee build-validate-output.log || {
+              echo "Release build validation failed. Check the build log for details."
+              exit 1
+            }
+
+          echo "Release build configuration validated successfully!"
+          
+      - name: Build Release Archive # Membangun arsip rilis tanpa penandatanganan kode
+        run: |
+          echo "Validating release build..."
           xcodebuild clean archive \
             -project LearnCHANGELOG.xcodeproj \
             -scheme LearnCHANGELOG \
             -configuration Release \
             -archivePath build/LearnCHANGELOG.xcarchive \
             -destination "generic/platform=iOS" \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO
-      
-      - name: Upload Archive
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee archive.log
+              echo "Release build failed. Check the build log for details."
+          
+          echo "Release build validated successfully!"
+            
+      - name: Upload Archive Artifact # Unggah arsip build sebagai artefak
         uses: actions/upload-artifact@v4
         with:
-          name: LearnCHANGELOG-Release-${{ github.sha }}
-          path: build/LearnCHANGELOG.xcarchive
-          retention-days: 30
+          name: LearnCHANGELOG-Release-${{ github.sha }} # Nama artefak dengan SHA komit
+          path: |
+           build/LearnCHANGELOG.xcarchive # Jalur ke arsip yang akan diunggah
+           release-build.log # Jalur ke log build rilis
+           archive.log # Jalur ke log arsip
+          retention-days: 30 # Simpan artefak selama 30 hari
+  
+  
+  build-dev:
+    name: Development Build # on develop branch
+    runs-on: macos-15 # Menjalankan di macOS terbaru
+    needs: [setup, test-unit] # pastikan job test-unit selesai terlebih dahulu
+    if: github.ref == 'refs/heads/develop' #apakah github.ref sama dengan refs/heads/develop
+
+    env:
+      BUILD_CONFIG: ${{ needs.setup.outputs.build-config }}
+      
+    steps:
+      - name: Checkout # Checkout kode sumber
+        uses: actions/checkout@v4
+
+      - name: Show Development Build Info
+        run: |
+          echo "DEVELOPMENT BUILD INFORMATION"
+          echo "Environment: ${{ needs.setup.outputs.environment }}"
+          echo "Build Configuration: $BUILD_CONFIG"
+          echo "Branch: ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
+      
+      - name: Select Xcode 16.4 # Pilih Xcode 16.4 untuk build development
+        run: sudo xcode-select --switch /Applications/Xcode_16.4.app
+      
+      - name: Build Development Build # Membangun build development 
+        run: |
+          echo "Building development build..."
+          xcodebuild clean build \
+            -project LearnCHANGELOG.xcodeproj \
+            -scheme LearnCHANGELOG \
+            -configuration $BUILD_CONFIG \
+            -destination "generic/platform=iOS" \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee dev-build.log
+              echo "Development build failed. Check the build log for details."
+          
+          echo "Development build completed successfully!"
+            
+      - name: Upload Development Build Artifact # Unggah build development sebagai artefak
+        uses: actions/upload-artifact@v4
+        with:
+          name: LearnCHANGELOG-${{ env.BUILD_CONFIG }}-dev-${{ github.sha }}
+          path: ./build/Build/Products/$BUILD_CONFIG-iphoneos/
+          retention-days: 7
