@@ -162,7 +162,7 @@ jobs:
 
       - name: Build Project # Membangun proyek untuk memastikan tidak ada error build
         run: |
-          echo "🔨 Building project for validation..."
+          echo "Building project for validation..."
           xcodebuild build \
             -project LearnCHANGELOG.xcodeproj \
             -scheme LearnCHANGELOG \
