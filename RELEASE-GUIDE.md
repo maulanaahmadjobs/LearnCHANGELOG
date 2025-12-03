@@ -75,8 +75,103 @@ Buat trigger release-please workflow secara manual:
 - `.release-please-manifest.json`: Tracking versi saat ini
 - `.github/workflows/release.yml`: Workflow GitHub Actions untuk release
 
-# Membuat Pull Request
+# Guide: Cara Membuat Pull Request & Release Otomatis (Release-Please)
 
+Dokumen ini menjelaskan alur lengkap mulai dari membuat Pull Request (PR), menjalankan CI, hingga proses rilis otomatis menggunakan Release-Please.
+
+---
+
+## 1. Membuat Pull Request
+
+1. Buka tab **Pull Requests** di GitHub.
+2. Pilih salah satu:
+   - Tombol **Compare & pull request**
+   - Tombol **New pull request**
+3. Pastikan arah PR benar:
+   - **From:** branch kamu
+   - **To:** **main**
+4. Klik **Create pull request**.
+
+---
+
+## 2. Tunggu CI Selesai
+
+Setelah PR dibuat, CI GitHub Actions akan berjalan otomatis.  
+Tunggu hingga semua status menjadi **Done**:
+
+- `Validate PR Title / Validate PR title (pull_request)`
+- `CI / Test (Xcode 16.4) (pull_request)`
+
+Jika seluruhnya hijau, lanjut ke tahap berikutnya.
+
+---
+
+## 3. Merge PR Pertama (Gunakan "Squash and merge")
+
+1. Klik tombol hijau **Squash and merge**.  
+   ⚠ Jangan gunakan **Merge pull request** biasa.
+2. Halaman form akan muncul. Bagian *Extended description* bersifat opsional.
+3. Klik **Confirm squash and merge**.
+
+---
+
+## 4. Tunggu Release-Please Bot (1–2 Menit)
+
+Setelah merge, Release-Please akan otomatis:
+
+- Mendeteksi commit seperti `feat: add Rumah Badut`
+- Menghasilkan entri baru pada **CHANGELOG.md**
+- Mengupdate **version number**
+- Membuat **Pull Request Release** otomatis
+
+Contoh:  
+`chore(main): release 0.3.0`
+
+---
+
+## 5. Review PR Release
+
+1. Buka tab **Pull Requests**.
+2. Akan muncul PR baru dari bot, misalnya:
+   - `chore(main): release 0.3.0`
+3. Buka PR tersebut.
+4. Cek tab **Files changed**:
+   - Pastikan versi naik sesuai
+   - Pastikan CHANGELOG benar
+
+---
+
+## 6. Merge PR Release (Squash Only)
+
+1. Klik **Squash and merge**.
+2. Dialog konfirmasi akan muncul.
+3. Klik **Confirm squash and merge**.
+
+---
+
+## 7. Setelah Merge Release (Otomatis Terjadi)
+
+GitHub akan otomatis:
+
+- Merge PR release
+- Generate tag, contoh: `v0.3.0`
+- Publish GitHub Release
+- Update file **CHANGELOG.md** di branch `main`
+
+Anda bisa membuka halaman release-nya, contoh: `v0.3.0`.
+
+---
+
+## 8. Update Repository Lokal
+
+Setelah release selesai:
+
+```sh
+git checkout main
+git pull origin main --tags
+```
+
+===========================================================================
 
 ### **Branch `featur` PR ke `main` branch (trigger release):**
 
