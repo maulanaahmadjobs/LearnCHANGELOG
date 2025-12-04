@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		570037922EE16269008E396D /* CHANGELOG-DEVELOP.md in Resources */ = {isa = PBXBuildFile; fileRef = 570037912EE16267008E396D /* CHANGELOG-DEVELOP.md */; };
 		573D78E32EDCA8EA007387FB /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 573D78E22EDCA8DC007387FB /* .gitignore */; };
 		573D79352EDCA92B007387FB /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = 573D79342EDCA928007387FB /* CHANGELOG.md */; };
 		573D79392EDCA972007387FB /* RELEASE-GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 573D79382EDCA952007387FB /* RELEASE-GUIDE.md */; };
@@ -32,6 +33,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		570037912EE16267008E396D /* CHANGELOG-DEVELOP.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "CHANGELOG-DEVELOP.md"; sourceTree = "<group>"; };
 		573D78A42EDCA536007387FB /* LearnCHANGELOG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LearnCHANGELOG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		573D78BA2EDCA539007387FB /* LearnCHANGELOGTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnCHANGELOGTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		573D78C42EDCA539007387FB /* LearnCHANGELOGUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnCHANGELOGUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -106,6 +108,7 @@
 		573D789B2EDCA536007387FB = {
 			isa = PBXGroup;
 			children = (
+				570037912EE16267008E396D /* CHANGELOG-DEVELOP.md */,
 				573D793C2EDCA9C8007387FB /* release-please-config.json */,
 				573D793A2EDCA99A007387FB /* .release-please-manifest.json */,
 				573D79382EDCA952007387FB /* RELEASE-GUIDE.md */,
@@ -253,6 +256,7 @@
 				573D78E32EDCA8EA007387FB /* .gitignore in Resources */,
 				573D793D2EDCA9D0007387FB /* release-please-config.json in Resources */,
 				573D79352EDCA92B007387FB /* CHANGELOG.md in Resources */,
+				570037922EE16269008E396D /* CHANGELOG-DEVELOP.md in Resources */,
 				573D793B2EDCA99D007387FB /* .release-please-manifest.json in Resources */,
 				573D79392EDCA972007387FB /* RELEASE-GUIDE.md in Resources */,
 			);
