@@ -197,7 +197,7 @@ jobs:
           retention-days: 7 # Simpan artefak selama 7 hari
 
       - name: Upload Logs (if failed) # Unggah log jika terjadi kegagalan
-        if: failure() # Hanya jika job gagal
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: test-logs-xcode-${{ matrix.xcode }} # Nama artefak log
