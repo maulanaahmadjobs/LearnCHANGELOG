@@ -65,17 +65,17 @@ jobs:
 
           elif [[ "${GITHUB_REF##*/}" == "develop" ]]; then
             echo "STAGING - develop branch"
-            echo "build-config=staging" >> $GITHUB_OUTPUT
+            echo "build-config=Debug" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT 
             echo "is-production=false" >> $GITHUB_OUTPUT
-            echo "environment=production" >>$GITHUB_OUTPUT
+            echo "environment=staging" >>$GITHUB_OUTPUT
 
           elif [[ "${GITHUB_REF##*/}" == feature/* ]]; then
             echo "FEATURE - feature branch"
             echo "build-config=Debug" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16" >> $GITHUB_OUTPUT
             echo "is-production=false" >> $GITHUB_OUTPUT
-            echo "environment=production" >>$GITHUB_OUTPUT
+            echo "environment=development" >>$GITHUB_OUTPUT
 
           elif [[ "${GITHUB_REF##*/}" == hotfix/* ]]; then
             echo "HOTFIX - hotfix branch"
@@ -118,8 +118,9 @@ jobs:
           echo "Build Configuration: $BUILD_CONFIG"
           echo "Environment: ${{ needs.setup.outputs.environment }}"
           echo "Simulator Name: $SIMULATOR_NAME"
-          echo "Is Production: ${{ needs.setup.outputs.is-production }}"
           echo "Xcode Version: ${{ matrix.xcode }}"
+          echo "Project: $PROJECT_NAME"
+          echo "Scheme: $BUILD_SCHEME"
 
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -switch /Applications/Xcode_${{ matrix.xcode }}.app
@@ -185,14 +186,14 @@ jobs:
           echo "Running unit tests..."
           xcodebuild clean test \
             -project $PROJECT_NAME \
-            -scheme $BUILD_NAME \
+            -scheme $BUILD_SCHEME \
             -destination "id=$SIMULATOR_ID" \
             -configuration ${{ needs.setup.outputs.build-config }} \
             -skip-testing:LearnCHANGELOGUITests \
             -only-testing:LearnCHANGELOGTests \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO | xcpretty --test --color --report html --output test-report.html \ && exit ${PIPESTATUS[0]}
+            CODE_SIGNING_ALLOWED=NO 2>&1 | xcpretty --test --color --report html --output test-report.html && exit ${PIPESTATUS[0]}
       
       - name: Upload Test Report # Unggah laporan pengujian sebagai artefak
         uses: actions/upload-artifact@v4
