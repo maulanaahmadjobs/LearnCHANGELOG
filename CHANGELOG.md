@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.1](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.5.0...v0.5.1) (2025-12-04)
+
+
+### Bug Fixes
+
+* add inline comments ([3fcf906](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/3fcf906063a32563e7076191098766f340e51dc1))
+* Merge test-ci-workflow, resolve conflict in cli.yml ([d59db7f](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/d59db7f59ed0340aafc2385e0cdc0f298afc85c9))
+* remove comment ([8a04516](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/8a04516491ac0caba634a99fb0e581898ea9b46c))
+* remove comment 2 ([da1e5d2](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/da1e5d256c936d2f9af5fa89d7b3c45acaf4feed))
+* remove comments ([aa8faa5](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/aa8faa5f17080a4cbcffc425bbbce4855f366059))
+* remove icon ([3be1cf1](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/3be1cf144560a949e140743a4984d2fc12ef6721))
+* remove inline comments causing xcodebuild error ([ed666f9](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/ed666f9d6b72010f515715e7b32918d27753614a))
+* remove spasi di depan \ dan penambahan - ([d31cb1a](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/d31cb1a4225353f3a6e47213e55573ae74caacd4))
+
 ## [0.5.0](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.4.0...v0.5.0) (2025-12-03)
 
 
