@@ -184,6 +184,11 @@ jobs:
       - name: Run Unit Tests # UNIT TESTING!
         run: |
           echo "Running unit tests..."
+          
+          rm -rf ~/Library/Developer/Xcode/DerivedData/*
+
+          set -o pipefail # Untuk menangkap exit code dari xcodebuild
+
           xcodebuild clean test \
             -project $PROJECT_NAME \
             -scheme $BUILD_SCHEME \
@@ -191,6 +196,8 @@ jobs:
             -configuration ${{ needs.setup.outputs.build-config }} \
             -skip-testing:LearnCHANGELOGUITests \
             -only-testing:LearnCHANGELOGTests \
+            ENABLE_TESTABILITY=YES \
+            GCC_PREPROCESSOR_DEFINITIONS='$(inherited) ENABLE_TESTABILITY=1' \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO 2>&1 | xcpretty --test --color --report html --output test-report.html && exit ${PIPESTATUS[0]}
