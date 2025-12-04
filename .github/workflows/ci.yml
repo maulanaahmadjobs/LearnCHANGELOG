@@ -270,9 +270,15 @@ jobs:
         with:
           name: LearnCHANGELOG-Release-${{ github.sha }} # Nama artefak dengan SHA komit
           path: |
+<<<<<<< HEAD
            build/LearnCHANGELOG.xcarchive # Jalur ke arsip yang akan diunggah
            release-build.log # Jalur ke log build rilis
            archive.log # Jalur ke log arsip
+=======
+           build/LearnCHANGELOG.xcarchive
+           release-build.log
+           archive.log
+>>>>>>> test-ci-workflow
           retention-days: 30 # Simpan artefak selama 30 hari
   
   
