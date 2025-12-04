@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.5.1...v0.6.0) (2025-12-04)
+
+
+### Features
+
+* add changelog-dev ([#27](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/27)) ([af71449](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/af7144929661e4387b4baec9fb4cb438c6034a18))
+
 ## [0.5.1](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.5.0...v0.5.1) (2025-12-04)
 
 
