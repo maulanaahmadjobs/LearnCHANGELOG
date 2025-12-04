@@ -8,11 +8,12 @@ name: Development Changelog
 
 on:
   pull_request:
-    types: ["closed"]
     branches: ["develop"]
+    types: ["closed"]
     
 permissions:
   contents: write
+  pull-requests: write
   
   
 jobs:
@@ -23,20 +24,19 @@ jobs:
       
       steps:
         - name: Checkout repository
-          uses: actions-checkout@v4
+          uses: actions/checkout@v4
           with:
-            ref: develop
             fetch-depth: 0
             
         - name: Get PR Info
-          id: pr_info
+          id: pr
           run: |
-            echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
-            echo "PR_TITLE=${{ github.event.pull_request.title }}" >> $GITHUB_OUPUT
-            echo "PR_AUTHOR=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
-            echo "MERGED_AT=${{ github.event.pull_request.merged_at }}" >> $GITHUB_OUTPUT
-            echo "BASE_SHA=${{ github.event.pull_request.base.sha }}" >> $GITHUB_OUTPUT
-            echo "MERGE_SHA=${{ github.event.pull_request.merge_commit_sha }}" >> $GITHUB_OUTPUT
+            echo "number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+            echo "title=${{ github.event.pull_request.title }}" >> $GITHUB_OUPUT
+            echo "author=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
+            echo "merged_at=${{ github.event.pull_request.merged_at }}" >> $GITHUB_OUTPUT
+            echo "base_sha=${{ github.event.pull_request.base.sha }}" >> $GITHUB_OUTPUT
+            echo "merge_sha=${{ github.event.pull_request.merge_commit_sha }}" >> $GITHUB_OUTPUT
         
         - name: Generate development version string
           id: version
@@ -44,13 +44,12 @@ jobs:
             DATE=$(date +'%Y.%m.%d')
             COUNT=$(git rev-list --count HEAD)
             VERSION="develop-${DATE}.${COUNT}"
-            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+            echo "value=$VERSION" >> $GITHUB_OUTPUT
             
         - name: Collect commit messages
           id: collect
           run: |
-            COMMITS=$(git log ${{ steps.pr_info.outputs.BASE_SHA }}..${{ steps.pr_info.outputs.MERGE_SHA }} --pretty=format:"%s|%h")
-            
+            COMMITS=$(git log ${{ steps.pr.outputs.base_sha }}..${{ steps.pr.outputs.merge_sha }} --pretty=format:"%s|%h")
             
             FEATURES=""
             FIXES=""
@@ -63,56 +62,58 @@ jobs:
               HASH=$(echo "$line" | cut -d '|' -f2)
               LINK="https://github.com/${{ github.repository }}/commit/$HASH"
               
-              if [[ "$MSG" == feat:* ]]; then
-                FEATURES="$FEATURES\n* ${MSG#feat:} ($LINK)"
-              elif [[ "$MSG" == fix:* ]]; then
-                FIXES="$FIXES\n* ${MSG#fix:} ($LINK)"
-              elif [[ "$MSG" == chore:* ]]; then
-                CHORE="$CHORE\n* ${MSG#chore:} ($LINK)"
-              elif [[ "$MSG" == refactor:* ]]; then
-                REFACTOR="$REFACTOR\n* ${MSG#refactor:} ($LINK)"
-              else
-                OTHERS="$OTHERS\n* $MSG ($LINK)"
-              fi
-
+              case "#MSG" in
+                feat:*)
+                  FEATURES="$FEATURES\n* ${MSG#feat: } ($LINK)"
+                  ;;
+                fix:*)
+                  FIXES="$FIXES\n* ${MSG#fix: } ($LINK)" 
+                  ;;
+                chore:*)
+                  CHORE="$CHORE\n* ${MSG#chore: } ($LINK)"
+                  ;;
+                refactor:*)
+                  REFACTORS="$REFACTORS\n* ${MSG#refactor: } ($LINK)"
+                  ;;
+                *)
+                  OTHER="$OTHERS\n* $MSG ($LINK)"
+                  ;;
+              esac
               done << "$COMMITS"
 
               {
-                echo "FEATURES<<EOF"
+                echo "features<<EOF"
                 echo -e "$FEATURES"
                 echo "EOF"
-                echo "FIXES<<EOF"
+                echo "fixes<<EOF"
                 echo -e "$FIXES"
                 echo "EOF"
-                echo "CHORE<<EOF"
+                echo "chores<<EOF"
                 echo -e "$CHORE"
                 echo "EOF"
-                echo "REFACTOR<<EOF"
+                echo "refactors<<EOF"
                 echo -e "$REFACTOR"
                 echo "EOF"
-                echo "OTHERS<<EOF"
+                echo "others<<EOF"
                 echo -e "$OTHERS"
                 echo "EOF"
               } >> $GITHUB_OUTPUT
         
         - name: Write CHANGELOG-DEV.md
           run: |
-            VERSION="${{ steps.version.outputs.VERSION }}"
-            PR_NUM="${{ steps.pr_info.outputs.PR_NUM }}"
-            TITLE="${{ steps.pr_info.outputs.TITLE }}"
-            MERGE="${{ steps.pr_info.outputs.MERGED_SHA }}"
-            AUTHOR="${{ steps.pr_info.outputs.PR_AUTHOR }}"
-            REPO="https://github.com/${{ github.repository }}"
-            COMPARE="$REPO/compare/${{ steps.pr_info.outputs.BASE_SHA }}..${{ steps.pr_info.outputs.MERGE_SHA }}"
+            VERSION="${{ steps.version.outputs.value }}"
+            BASE="${{ steps.pr.outputs.base_sha }}"
+            MERGE="${{ steps.pr.outputs.merge_sha }}"
+            COMPARE_URL="https://github.com/${{ github.repository }}/pull/${BASE}..${MERGE}"
 
             {
-              echo "## [$VERSION] ($COMPARE) ($MERGED"
+              echo "## [$VERSION] ($COMPARE_URL)
               echo ""
-              [[ -n "${{ steps.collect.outputs.FEATURES }}" ]] && echo "### Features" && echo -e "${{ steps.collect.outputs.FEATURES }}" && echo ""
-              [[ -n "${{ steps.collect.outputs.FIXES }}" ]] && echo "### Bug Fixes" && echo -e "${{ steps.collect.outputs.FIXES }}" && echo ""
-              [[ -n "${{ steps.collect.outputs.CHORE }}" ]] && echo "### Chores" && echo -e "${{ steps.collect.outputs.CHORE }}" && echo ""
-              [[ -n "${{ steps.collect.outputs.REFACTOR }}" ]] && echo "### Refactors" && echo -e "${{ steps.collect.outputs.REFACTOR }}" && echo ""
-              [[ -n "${{ steps.collect.outputs.OTHERS }}" ]] && echo "### Others" && echo -e "${{ steps.collect.outputs.OTHERS }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.features }}" ]] && echo "### Features" && echo -e "${{ steps.collect.outputs.features }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.fixes }}" ]] && echo "### Bug Fixes" && echo -e "${{ steps.collect.outputs.fixes }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.chores }}" ]] && echo "### Chores" && echo -e "${{ steps.collect.outputs.chores }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.refactors }}" ]] && echo "### Refactors" && echo -e "${{ steps.collect.outputs.refactors }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.others }}" ]] && echo "### Others" && echo -e "${{ steps.collect.outputs.others }}" && echo ""
               echo ""
               echo "---"
               echo ""
@@ -123,8 +124,8 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add CHANGELOG-DEV.md
-            git commit -m "chore(dev-changelog): update ${{
-              steps.version.outputs.VERSION }}"
+            
+            git commit -m "chore(dev): update changelog ${{ steps.version.outputs.value }}"
             git push origin develop
 
 
