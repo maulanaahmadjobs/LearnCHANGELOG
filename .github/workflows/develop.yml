@@ -27,6 +27,7 @@ jobs:
           uses: actions/checkout@v4
           with:
             fetch-depth: 0
+            token: ${{ secrets.GITHUB_TOKEN }}
             
         - name: Get PR Info
           id: pr
@@ -53,16 +54,17 @@ jobs:
             
             FEATURES=""
             FIXES=""
-            CHORE=""
+            CHORES=""
             REFACTOR=""
             OTHERS=""
             
-            while IFS= read -r line; do
+            # IFS=$'\n' untuk handle newline
+            while IFS=$'\n' read -r line; do
               MSG=$(echo "$line" | cut -d '|' -f1)
               HASH=$(echo "$line" | cut -d '|' -f2)
               LINK="https://github.com/${{ github.repository }}/commit/$HASH"
               
-              case "#MSG" in
+              case "$MSG" in
                 feat:*)
                   FEATURES="$FEATURES\n* ${MSG#feat: } ($LINK)"
                   ;;
@@ -79,25 +81,26 @@ jobs:
                   OTHER="$OTHERS\n* $MSG ($LINK)"
                   ;;
               esac
-              done << "$COMMITS"
+              done <<< "$COMMITS"
 
-              {
-                echo "features<<EOF"
-                echo -e "$FEATURES"
-                echo "EOF"
-                echo "fixes<<EOF"
-                echo -e "$FIXES"
-                echo "EOF"
-                echo "chores<<EOF"
-                echo -e "$CHORE"
-                echo "EOF"
-                echo "refactors<<EOF"
-                echo -e "$REFACTOR"
-                echo "EOF"
-                echo "others<<EOF"
-                echo -e "$OTHERS"
-                echo "EOF"
-              } >> $GITHUB_OUTPUT
+              
+            {
+            echo "features<<EOF"
+            echo -e "$FEATURES"
+            echo "EOF"
+            echo "fixes<<EOF"
+            echo -e "$FIXES"
+            echo "EOF"
+            echo "chores<<EOF"
+            echo -e "$CHORES"
+            echo "EOF"
+            echo "refactors<<EOF"
+            echo -e "$REFACTORS"
+            echo "EOF"
+            echo "others<<EOF"
+            echo -e "$OTHERS"
+            echo "EOF"
+            } >> $GITHUB_OUTPUT
         
         - name: Write CHANGELOG-DEV.md
           run: |
