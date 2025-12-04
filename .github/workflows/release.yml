@@ -5,7 +5,7 @@
 #  Created by west on 30/11/25.
 #
 
-name: Release
+name: Release Changelog
 
 on:
   push:
@@ -26,3 +26,8 @@ jobs:
         id: release
         with:
           target-branch: ${{ github.ref_name }}
+          release-type: simple
+          changelog-types: |
+           [
+             { "type": "feat", "section": "Features" },
+             {

@@ -61,30 +61,35 @@ jobs:
             echo "build-config=Release" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT
             echo "is-production=true" >> $GITHUB_OUTPUT
+            echo "environment=production" >>$GITHUB_OUTPUT
 
           elif [[ "${GITHUB_REF##*/}" == "develop" ]]; then
             echo "STAGING - develop branch"
             echo "build-config=staging" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT 
             echo "is-production=false" >> $GITHUB_OUTPUT
+            echo "environment=production" >>$GITHUB_OUTPUT
 
-          elif [[ "${GITHUB_REF##*/}" == ^feature/ ]]; then
+          elif [[ "${GITHUB_REF##*/}" == feature/* ]]; then
             echo "FEATURE - feature branch"
             echo "build-config=Debug" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16" >> $GITHUB_OUTPUT
             echo "is-production=false" >> $GITHUB_OUTPUT
+            echo "environment=production" >>$GITHUB_OUTPUT
 
           elif [[ "${GITHUB_REF##*/}" == hotfix/* ]]; then
             echo "HOTFIX - hotfix branch"
             echo "build-config=Release" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT
             echo "is-production=true" >> $GITHUB_OUTPUT
+            echo "environment=production" >>$GITHUB_OUTPUT
 
           else
             echo "UNKNOWN branch type" # default to Debug
             echo "build-config=Debug" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT
             echo "is-production=false" >> $GITHUB_OUTPUT
+            echo "environment=production" >>$GITHUB_OUTPUT
           fi
           
           echo "Configuration determined successfully"
@@ -153,8 +158,8 @@ jobs:
           echo "Xcode: ${{ matrix.xcode }}"
           xcodebuild -version # Menampilkan versi Xcode
           swift --version # Menampilkan versi Swift
-          echo "Project: LearnCHANGELOG.xcodeproj"
-          echo "Scheme: LearnCHANGELOG"
+          echo "Project: $PROJECT_NAME"
+          echo "Scheme: $BUILD_SCHEME"
           echo "Build Configuration: $BUILD_CONFIG"
       
       - name: Install xcpretty #Untuk mendapatkan pesan error lengkapnya
@@ -164,8 +169,8 @@ jobs:
         run: |
           echo "Building project for validation..."
           xcodebuild build \
-            -project LearnCHANGELOG.xcodeproj \
-            -scheme LearnCHANGELOG \
+            -project $PROJECT_NAME \
+            -scheme $BUILD_SCHEME \
             -destination "id=$SIMULATOR_ID" \
             -configuration ${{ needs.setup.outputs.build-config }} \
             CODE_SIGN_IDENTITY="-" \
@@ -179,8 +184,8 @@ jobs:
         run: |
           echo "Running unit tests..."
           xcodebuild clean test \
-            -project LearnCHANGELOG.xcodeproj \
-            -scheme LearnCHANGELOG \
+            -project $PROJECT_NAME \
+            -scheme $BUILD_NAME \
             -destination "id=$SIMULATOR_ID" \
             -configuration ${{ needs.setup.outputs.build-config }} \
             -skip-testing:LearnCHANGELOGUITests \
@@ -235,9 +240,9 @@ jobs:
       - name: Validate Release Build # Build validasi sebelum archip
         run: |
           echo "Validating release build configuration..."
-          excodebuild build \
-            -project LearnCHANGELOG.xcodeproj \
-            -scheme LearnCHANGELOG \
+          xcodebuild build \
+            -project $PROJECT_NAME \
+            -scheme $BUILD_SCHAME \
             -configuration Release \
             -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="-" \
@@ -253,8 +258,8 @@ jobs:
         run: |
           echo "Validating release build..."
           xcodebuild clean archive \
-            -project LearnCHANGELOG.xcodeproj \
-            -scheme LearnCHANGELOG \
+            -project $PROJECT_NAME \
+            -scheme $BUILD_SCHAME \
             -configuration Release \
             -archivePath build/LearnCHANGELOG.xcarchive \
             -destination "generic/platform=iOS" \
@@ -270,15 +275,9 @@ jobs:
         with:
           name: LearnCHANGELOG-Release-${{ github.sha }} # Nama artefak dengan SHA komit
           path: |
-<<<<<<< HEAD
            build/LearnCHANGELOG.xcarchive # Jalur ke arsip yang akan diunggah
            release-build.log # Jalur ke log build rilis
            archive.log # Jalur ke log arsip
-=======
-           build/LearnCHANGELOG.xcarchive
-           release-build.log
-           archive.log
->>>>>>> test-ci-workflow
           retention-days: 30 # Simpan artefak selama 30 hari
   
   
@@ -310,8 +309,8 @@ jobs:
         run: |
           echo "Building development build..."
           xcodebuild clean build \
-            -project LearnCHANGELOG.xcodeproj \
-            -scheme LearnCHANGELOG \
+            -project $PROJECT_NAME \
+            -scheme $BUILD_SCHAME \
             -configuration $BUILD_CONFIG \
             -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="-" \
