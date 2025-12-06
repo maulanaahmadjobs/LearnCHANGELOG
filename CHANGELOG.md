@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.6.2...v0.7.0) (2025-12-06)
+
+
+### Features
+
+* mencboba lagi ([#37](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/37)) ([95a42b1](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/95a42b1c817f40897e4fd690c09d0cb7f115a6a7))
+
 ## [0.6.2](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.6.1...v0.6.2) (2025-12-06)
 
 
