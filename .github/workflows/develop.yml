@@ -27,6 +27,7 @@ jobs:
           uses: actions/checkout@v4
           with:
             fetch-depth: 0
+            token: ${{ secrets.GITHUB_TOKEN }}
             
         - name: Get PR Info
           id: pr
@@ -53,16 +54,17 @@ jobs:
             
             FEATURES=""
             FIXES=""
-            CHORE=""
-            REFACTOR=""
+            CHORES=""
+            REFACTORS=""
             OTHERS=""
             
-            while IFS= read -r line; do
+            # IFS=$'\n' untuk handle newline
+            while IFS=$'\n' read -r line; do
               MSG=$(echo "$line" | cut -d '|' -f1)
               HASH=$(echo "$line" | cut -d '|' -f2)
               LINK="https://github.com/${{ github.repository }}/commit/$HASH"
               
-              case "#MSG" in
+              case "$MSG" in
                 feat:*)
                   FEATURES="$FEATURES\n* ${MSG#feat: } ($LINK)"
                   ;;
@@ -70,7 +72,7 @@ jobs:
                   FIXES="$FIXES\n* ${MSG#fix: } ($LINK)" 
                   ;;
                 chore:*)
-                  CHORE="$CHORE\n* ${MSG#chore: } ($LINK)"
+                  CHORES="$CHORES\n* ${MSG#chore: } ($LINK)"
                   ;;
                 refactor:*)
                   REFACTORS="$REFACTORS\n* ${MSG#refactor: } ($LINK)"
@@ -79,25 +81,30 @@ jobs:
                   OTHER="$OTHERS\n* $MSG ($LINK)"
                   ;;
               esac
-              done << "$COMMITS"
+              done <<< "$COMMITS"
 
-              {
-                echo "features<<EOF"
-                echo -e "$FEATURES"
-                echo "EOF"
-                echo "fixes<<EOF"
-                echo -e "$FIXES"
-                echo "EOF"
-                echo "chores<<EOF"
-                echo -e "$CHORE"
-                echo "EOF"
-                echo "refactors<<EOF"
-                echo -e "$REFACTOR"
-                echo "EOF"
-                echo "others<<EOF"
-                echo -e "$OTHERS"
-                echo "EOF"
-              } >> $GITHUB_OUTPUT
+              
+            {
+            echo "feat<<EOF"
+            echo -e "$FEATURES"
+            echo "EOF"
+
+            echo "fix<<EOF"
+            echo -e "$FIXES"
+            echo "EOF"
+
+            echo "chore<<EOF"
+            echo -e "$CHORES"
+            echo "EOF"
+
+            echo "refactor<<EOF"
+            echo -e "$REFACTORS"
+            echo "EOF"
+
+            echo "other<<EOF"
+            echo -e "$OTHERS"
+            echo "EOF"
+            } >> $GITHUB_OUTPUT
         
         - name: Write CHANGELOG-DEV.md
           run: |
@@ -107,13 +114,13 @@ jobs:
             COMPARE_URL="https://github.com/${{ github.repository }}/pull/${BASE}..${MERGE}"
 
             {
-              echo "## [$VERSION] ($COMPARE_URL)
+              echo "## [$VERSION] ($COMPARE_URL)"
               echo ""
-              [[ -n "${{ steps.collect.outputs.features }}" ]] && echo "### Features" && echo -e "${{ steps.collect.outputs.features }}" && echo ""
-              [[ -n "${{ steps.collect.outputs.fixes }}" ]] && echo "### Bug Fixes" && echo -e "${{ steps.collect.outputs.fixes }}" && echo ""
-              [[ -n "${{ steps.collect.outputs.chores }}" ]] && echo "### Chores" && echo -e "${{ steps.collect.outputs.chores }}" && echo ""
-              [[ -n "${{ steps.collect.outputs.refactors }}" ]] && echo "### Refactors" && echo -e "${{ steps.collect.outputs.refactors }}" && echo ""
-              [[ -n "${{ steps.collect.outputs.others }}" ]] && echo "### Others" && echo -e "${{ steps.collect.outputs.others }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.feat }}" ]] && echo "### Features" && echo -e "${{ steps.collect.outputs.feat }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.fix }}" ]] && echo "### Bug Fixes" && echo -e "${{ steps.collect.outputs.fix }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.chore }}" ]] && echo "### Chores" && echo -e "${{ steps.collect.outputs.chore }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.refactor }}" ]] && echo "### Refactors" && echo -e "${{ steps.collect.outputs.refactor }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.other }}" ]] && echo "### Others" && echo -e "${{ steps.collect.outputs.other }}" && echo ""
               echo ""
               echo "---"
               echo ""
@@ -125,6 +132,11 @@ jobs:
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add CHANGELOG-DEV.md
             
+            if git diff --cached --quiet; then
+               echo "No changes to commit"
+               exit 0
+            fi
+
             git commit -m "chore(dev): update changelog ${{ steps.version.outputs.value }}"
             git push origin develop
 
