@@ -55,7 +55,7 @@ jobs:
             FEATURES=""
             FIXES=""
             CHORES=""
-            REFACTOR=""
+            REFACTORS=""
             OTHERS=""
             
             # IFS=$'\n' untuk handle newline
