@@ -9,22 +9,23 @@ name: CI
 
 on:
   push:
-    branches: [
-      main, # production
-      develop, # staging
-      feature/*, # feature branches
-      hotfix/* # hotfix branches
-      ]
+    branches:
+      - main, # production
+      - develop, # staging
+      - feature/*, # feature branches
+      - hotfix/* # hotfix branches
 
   pull_request:
-    branches: ["main", "develop"]
+    branches: 
+      - main
+      - develop
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 # ENVIRONMENT VARIABLES
 env:
@@ -175,8 +176,8 @@ jobs:
           echo "Scheme: $BUILD_SCHEME"
           echo "Build Configuration: $BUILD_CONFIG"
       
-      #- name: Install xcpretty #Untuk mendapatkan pesan error lengkapnya (optional)
-      #  run: gem install xcpretty
+      - name: Install xcpretty #Untuk mendapatkan pesan error lengkapnya (optional)
+        run: gem install xcpretty
 
       # logging dengan `tee build.log`
       - name: Build Project # Membangun proyek untuk memastikan tidak ada error build
@@ -189,7 +190,9 @@ jobs:
             -configuration ${{ needs.setup.outputs.build-config }} \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO | xcpretty --color || tee build.log
+            CODE_SIGNING_ALLOWED=NO \
+            | tee build.log \
+            | xcpretty --color
             
             if [ ${PIPESTATUS[0]} -ne 0 ]; then
                echo "Build failed. Check build.log for details."
@@ -215,13 +218,17 @@ jobs:
             GCC_PREPROCESSOR_DEFINITIONS='$(inherited) ENABLE_TESTABILITY=1' \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO 2>&1 | tee test.log
+            CODE_SIGNING_ALLOWED=NO \
+            | tee test.log \
+            | xcpretty --color
 
             # Cek exit code
             if [ ${PIPESTATUS[0]} -ne 0 ]; then
-              echo "Unit tests failed. Check test.log for details."
+              echo "Unit tests failed. Check unit-test-output.log for details."
               exit 1
             fi
+
+            echo "Unit tests passed!"
 
             # Buat report html dari log (opsional)
             if [ -f "test.log" ]; then
@@ -274,6 +281,9 @@ jobs:
       
       - name: Select Xcode 16.4 # Pilih Xcode 16.4 untuk build rilis
         run: sudo xcode-select --switch /Applications/Xcode_16.4.app
+
+      - name: Install xcpretty
+        run: gem install xcpretty
       
       - name: Validate Release Build # Build validasi sebelum archip
         run: |
@@ -285,10 +295,15 @@ jobs:
             -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO | tee build-validate-output.log || {
-              echo "Release build validation failed. Check the build log for details."
-              exit 1
-            }
+            CODE_SIGNING_ALLOWED=NO \
+            | tee build-validate.log \
+            | xcpretty --color
+          
+          # Check exit code
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "Release build validation failed. Check build-validate.log"
+            exit 1
+          fi
 
           echo "Release build configuration validated successfully!"
           
@@ -297,15 +312,21 @@ jobs:
           echo "Validating release build..."
           xcodebuild clean archive \
             -project $PROJECT_NAME \
-            -scheme $BUILD_SCHAME \
+            -scheme $BUILD_SCHEME \
             -configuration Release \
             -archivePath build/LearnCHANGELOG.xcarchive \
             -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_ALLOWED=NO \
-            | tee archive.log
-              echo "Release build failed. Check the build log for details."
+            | tee archive.log \
+            | xcpretty --color
           
+          # Check exit code
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "❌ Release archive failed. Check archive.log"
+            exit 1
+          fi
+
           echo "Release build validated successfully!"
             
       - name: Upload Archive Artifact # Unggah arsip build sebagai artefak
@@ -318,7 +339,7 @@ jobs:
            archive.log # Jalur ke log arsip
           retention-days: 30 # Simpan artefak selama 30 hari
   
-  
+  # Job 3: Development Build (hanya di develop branch)
   build-dev:
     name: Development Build # on develop branch
     runs-on: macos-15 # Menjalankan di macOS terbaru
@@ -343,18 +364,27 @@ jobs:
       - name: Select Xcode 16.4 # Pilih Xcode 16.4 untuk build development
         run: sudo xcode-select --switch /Applications/Xcode_16.4.app
       
+      - name: Install xcpretty
+        run: gem install xcpretty
+
       - name: Build Development Build # Membangun build development 
         run: |
           echo "Building development build..."
           xcodebuild clean build \
             -project $PROJECT_NAME \
-            -scheme $BUILD_SCHAME \
+            -scheme $BUILD_SCHEME \
             -configuration $BUILD_CONFIG \
             -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_ALLOWED=NO \
-            | tee dev-build.log
-              echo "Development build failed. Check the build log for details."
+            | tee dev-build.log \
+            | xcpretty --color
+          
+          # Check exit code
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "Development build failed. Check dev-build.log"
+            exit 1
+          fi
           
           echo "Development build completed successfully!"
             
