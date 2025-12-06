@@ -26,8 +26,3 @@ jobs:
         id: release
         with:
           target-branch: ${{ github.ref_name }}
-          release-type: simple
-          changelog-types: |
-           [
-             { "type": "feat", "section": "Features" },
-             {
