@@ -54,8 +54,7 @@ jobs:
           echo "Analyzing branch: ${{ github.ref }}"
 
           # Ekstrak branch name dari ref
-          BRANCH_NAME="${{ github.ref_name }}"
-          echo "Branch name: $BRANCH_NAME"
+          # BRANCH_NAME="${{ github.ref_name }}"
 
           # Untuk pull_request, gunakan head_ref (branch sumber)
           # Untuk push, gunakan ref_name
@@ -67,19 +66,21 @@ jobs:
             echo "Push to branch: $BRANCH_NAME"
           fi
 
+          echo "Branch name: $BRANCH_NAME"
+
           if [[ "$BRANCH_NAME" == "main" ]]; then
             echo "PRODUCTION - main branch"
             echo "build-config=Release" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT
             echo "is-production=true" >> $GITHUB_OUTPUT
-            echo "environment=production" >>$GITHUB_OUTPUT
+            echo "environment=production" >> $GITHUB_OUTPUT
 
           elif [[ "$BRANCH_NAME" == "develop" ]]; then
             echo "STAGING - develop branch"
             echo "build-config=Debug" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT 
             echo "is-production=false" >> $GITHUB_OUTPUT
-            echo "environment=staging" >>$GITHUB_OUTPUT
+            echo "environment=staging" >> $GITHUB_OUTPUT
 
           elif [[ "$BRANCH_NAME" =~ ^feature/ ]]; then
             echo "FEATURE - feature branch"
@@ -93,14 +94,14 @@ jobs:
             echo "build-config=Release" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT
             echo "is-production=true" >> $GITHUB_OUTPUT
-            echo "environment=production" >>$GITHUB_OUTPUT
+            echo "environment=production" >> $GITHUB_OUTPUT
 
           else
             echo "UNKNOWN branch type" # default to Debug
             echo "build-config=Debug" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT
             echo "is-production=false" >> $GITHUB_OUTPUT
-            echo "environment=unknown" >>$GITHUB_OUTPUT
+            echo "environment=unknown" >> $GITHUB_OUTPUT
           fi
           
           echo "Configuration determined successfully"
