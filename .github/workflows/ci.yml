@@ -56,28 +56,28 @@ jobs:
           BRANCH_NAME="${{ github.ref_name }}"
           echo "Branch name: $BRANCH_NAME"
 
-          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
+          if [[ "$BRANCH_NAME" == "main" ]]; then
             echo "PRODUCTION - main branch"
             echo "build-config=Release" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT
             echo "is-production=true" >> $GITHUB_OUTPUT
             echo "environment=production" >>$GITHUB_OUTPUT
 
-          elif [[ "${GITHUB_REF##*/}" == "develop" ]]; then
+          elif [[ "$BRANCH_NAME" == "develop" ]]; then
             echo "STAGING - develop branch"
             echo "build-config=Debug" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT 
             echo "is-production=false" >> $GITHUB_OUTPUT
             echo "environment=staging" >>$GITHUB_OUTPUT
 
-          elif [[ "${GITHUB_REF##*/}" == feature/* ]]; then
+          elif [[ "$BRANCH_NAME" =~ ^feature/ ]]; then
             echo "FEATURE - feature branch"
             echo "build-config=Debug" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16" >> $GITHUB_OUTPUT
             echo "is-production=false" >> $GITHUB_OUTPUT
             echo "environment=development" >>$GITHUB_OUTPUT
 
-          elif [[ "${GITHUB_REF##*/}" == hotfix/* ]]; then
+          elif [[ "$BRANCH_NAME" =~ ^hotfix/ ]]; then
             echo "HOTFIX - hotfix branch"
             echo "build-config=Release" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT
@@ -89,7 +89,7 @@ jobs:
             echo "build-config=Debug" >> $GITHUB_OUTPUT
             echo "simulator-name=iPhone 16 Pro" >> $GITHUB_OUTPUT
             echo "is-production=false" >> $GITHUB_OUTPUT
-            echo "environment=production" >>$GITHUB_OUTPUT
+            echo "environment=unknown" >>$GITHUB_OUTPUT
           fi
           
           echo "Configuration determined successfully"
@@ -163,23 +163,26 @@ jobs:
           echo "Scheme: $BUILD_SCHEME"
           echo "Build Configuration: $BUILD_CONFIG"
       
-      - name: Install xcpretty #Untuk mendapatkan pesan error lengkapnya
-        run: gem install xcpretty
+      #- name: Install xcpretty #Untuk mendapatkan pesan error lengkapnya (optional)
+      #  run: gem install xcpretty
 
+      # logging dengan `tee build.log`
       - name: Build Project # Membangun proyek untuk memastikan tidak ada error build
         run: |
           echo "Building project for validation..."
           xcodebuild build \
             -project $PROJECT_NAME \
             -scheme $BUILD_SCHEME \
-            -destination "id=$SIMULATOR_ID" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
             -configuration ${{ needs.setup.outputs.build-config }} \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO | xcpretty --color --log-path build-xcode-${{ matrix.xcode }}.log | tee build-output.log || {
-              echo "Build failed. Check the build log for details."
-              exit 1
-            }
+            CODE_SIGNING_ALLOWED=NO | xcpretty --color || tee build.log
+            
+            if [ ${PIPESTATUS[0]} -ne 0 ]; then
+               echo "Build failed. Check build.log for details."
+               exit 1
+            fi
 
       - name: Run Unit Tests # UNIT TESTING!
         run: |
@@ -192,7 +195,7 @@ jobs:
           xcodebuild clean test \
             -project $PROJECT_NAME \
             -scheme $BUILD_SCHEME \
-            -destination "id=$SIMULATOR_ID" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
             -configuration ${{ needs.setup.outputs.build-config }} \
             -skip-testing:LearnCHANGELOGUITests \
             -only-testing:LearnCHANGELOGTests \
@@ -200,7 +203,22 @@ jobs:
             GCC_PREPROCESSOR_DEFINITIONS='$(inherited) ENABLE_TESTABILITY=1' \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO 2>&1 | xcpretty --test --color --report html --output test-report.html && exit ${PIPESTATUS[0]}
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee test.log
+
+            # Cek exit code
+            if [ ${PIPESTATUS[0]} -ne 0 ]; then
+              echo "Unit tests failed. Check test.log for details."
+              exit 1
+            fi
+
+            # Buat report html dari log (opsional)
+            if [ -f "test.log" ]; then
+              # Convert log to html report sederhana
+              echo "<html><body><pre>" > test-report.html
+              cat test.log >> test-report.html
+              echo "</pre></body></html>" >> test-report.html
+            fi
+
       
       - name: Upload Test Report # Unggah laporan pengujian sebagai artefak
         uses: actions/upload-artifact@v4
