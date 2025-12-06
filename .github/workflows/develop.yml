@@ -33,7 +33,7 @@ jobs:
           id: pr
           run: |
             echo "number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
-            echo "title=${{ github.event.pull_request.title }}" >> $GITHUB_OUPUT
+            echo "title=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
             echo "author=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
             echo "merged_at=${{ github.event.pull_request.merged_at }}" >> $GITHUB_OUTPUT
             echo "base_sha=${{ github.event.pull_request.base.sha }}" >> $GITHUB_OUTPUT
@@ -85,7 +85,7 @@ jobs:
 
               
             {
-            echo "feature<<EOF"
+            echo "feat<<EOF"
             echo -e "$FEATURES"
             echo "EOF"
 
