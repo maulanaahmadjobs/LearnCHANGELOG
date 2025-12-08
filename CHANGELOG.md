@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.1](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.7.0...v0.7.1) (2025-12-08)
+
+
+### Bug Fixes
+
+* configure release-please properly 2 ([#41](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/41)) ([1f7426c](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/1f7426c8e8786b1b9500d1bc3cf4d2bd77608219))
+* correct pipe syntax and remove commas in branch names ([#43](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/43)) ([3d2c06c](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/3d2c06cb14ee47c3e5c03e4c14e8141e6f9196dd))
+* update ([#47](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/47)) ([eb1e688](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/eb1e688966b683624d316e54cff74721746288d1))
+* update release.yml ([#48](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/48)) ([28f367f](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/28f367febe10978420496036b8fbddbcd41f02d8))
+
 ## [0.6.2](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.6.1...v0.6.2) (2025-12-06)
 
 
