@@ -36,10 +36,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # Optional: Tampilkan output untuk debugging
-     - name: Show Release Output
-         if: steps.release.outputs.release_created
-         run: |
-           echo "Release created: ${{ steps.release.ouputs.release_created }}"
-           echo "Tag name: ${{ steps.release.outputs.tag_name }}"
-           echo "Version: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}"
-           echo "Upload URL: ${{ steps.release.outputs.upload_url }}"
+      - name: Show Release Output
+          if: steps.release.outputs.release_created
+          run: |
+            echo "Release created: ${{ steps.release.ouputs.release_created }}"
+            echo "Tag name: ${{ steps.release.outputs.tag_name }}"
+            echo "Version: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}"
+            echo "Upload URL: ${{ steps.release.outputs.upload_url }}"
