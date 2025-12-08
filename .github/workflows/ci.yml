@@ -344,9 +344,10 @@ jobs:
         with:
           name: LearnCHANGELOG-Release-${{ github.sha }} # Nama artefak dengan SHA komit
           path: |
-           build/LearnCHANGELOG.xcarchive # Jalur ke arsip yang akan diunggah
-           *.log # Upload semua file .log
+           *.log
           retention-days: 30 # Simpan artefak selama 30 hari
+          # build/LearnCHANGELOG.xcarchive # Jalur ke arsip yang akan diunggah
+          # *.log # Upload semua file .log
           # build-validate.log # Jalur ke log build rilis
           # release-build.log # Jalur ke log arsip
   
