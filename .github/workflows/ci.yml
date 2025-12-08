@@ -332,7 +332,7 @@ jobs:
           
           # Check exit code
           if [ ${PIPESTATUS[0]} -ne 0 ]; then
-            echo "❌ Release archive failed. Check archive.log"
+            echo "Release archive failed. Check archive.log"
             exit 1
           fi
 
