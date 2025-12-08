@@ -10,9 +10,9 @@ name: CI
 on:
   push:
     branches:
-      - main, # production
-      - develop, # staging
-      - feature/*, # feature branches
+      - main # production
+      - develop # staging
+      - feature/* # feature branches
       - hotfix/* # hotfix branches
 
   pull_request:
@@ -183,6 +183,9 @@ jobs:
       - name: Build Project # Membangun proyek untuk memastikan tidak ada error build
         run: |
           echo "Building project for validation..."
+
+          set -o pipefail
+
           xcodebuild build \
             -project $PROJECT_NAME \
             -scheme $BUILD_SCHEME \
@@ -190,9 +193,9 @@ jobs:
             -configuration ${{ needs.setup.outputs.build-config }} \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            | tee build.log \
-            | xcpretty --color
+            CODE_SIGNING_ALLOWED=NO | \
+            tee build.log | \
+            xcpretty --color
             
             if [ ${PIPESTATUS[0]} -ne 0 ]; then
                echo "Build failed. Check build.log for details."
@@ -218,9 +221,9 @@ jobs:
             GCC_PREPROCESSOR_DEFINITIONS='$(inherited) ENABLE_TESTABILITY=1' \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            | tee test.log \
-            | xcpretty --color
+            CODE_SIGNING_ALLOWED=NO | \
+            tee test.log | \
+            xcpretty --test --color --report html --output test-report.html
 
             # Cek exit code
             if [ ${PIPESTATUS[0]} -ne 0 ]; then
@@ -285,31 +288,38 @@ jobs:
       - name: Install xcpretty
         run: gem install xcpretty
       
-      - name: Validate Release Build # Build validasi sebelum archip
-        run: |
-          echo "Validating release build configuration..."
-          xcodebuild build \
-            -project $PROJECT_NAME \
-            -scheme $BUILD_SCHEME \
-            -configuration Release \
-            -destination "generic/platform=iOS" \
-            CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            | tee build-validate.log \
-            | xcpretty --color
-          
-          # Check exit code
-          if [ ${PIPESTATUS[0]} -ne 0 ]; then
-            echo "Release build validation failed. Check build-validate.log"
-            exit 1
-          fi
+      # # Optional: Validate Release Build Configuration sebelum membangun arsip
+      # - name: Validate Release Build # Build validasi sebelum archip
+      #   run: |
+      #     echo "Validating release build configuration..."
 
-          echo "Release build configuration validated successfully!"
+      #     set -o pipefail
+
+      #     xcodebuild build \
+      #       -project $PROJECT_NAME \
+      #       -scheme $BUILD_SCHEME \
+      #       -configuration Release \
+      #       -destination "generic/platform=iOS" \
+      #       CODE_SIGN_IDENTITY="-" \
+      #       CODE_SIGNING_REQUIRED=NO \
+      #       CODE_SIGNING_ALLOWED=NO | \
+      #       tee build-validate.log | \
+      #       xcpretty --color
+          
+      #     # Check exit code
+      #     if [ ${PIPESTATUS[0]} -ne 0 ]; then
+      #       echo "Release build validation failed. Check build-validate.log"
+      #       exit 1
+      #     fi
+
+      #     echo "Release build configuration validated successfully!"
           
       - name: Build Release Archive # Membangun arsip rilis tanpa penandatanganan kode
         run: |
           echo "Validating release build..."
+
+          set -o pipefail
+
           xcodebuild clean archive \
             -project $PROJECT_NAME \
             -scheme $BUILD_SCHEME \
@@ -317,13 +327,13 @@ jobs:
             -archivePath build/LearnCHANGELOG.xcarchive \
             -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_ALLOWED=NO \
-            | tee archive.log \
-            | xcpretty --color
+            CODE_SIGNING_ALLOWED=NO | \
+            tee release-build.log | \
+            xcpretty --color
           
           # Check exit code
           if [ ${PIPESTATUS[0]} -ne 0 ]; then
-            echo "❌ Release archive failed. Check archive.log"
+            echo "Release archive failed. Check archive.log"
             exit 1
           fi
 
@@ -335,9 +345,10 @@ jobs:
           name: LearnCHANGELOG-Release-${{ github.sha }} # Nama artefak dengan SHA komit
           path: |
            build/LearnCHANGELOG.xcarchive # Jalur ke arsip yang akan diunggah
-           release-build.log # Jalur ke log build rilis
-           archive.log # Jalur ke log arsip
+           *.log # Upload semua file .log
           retention-days: 30 # Simpan artefak selama 30 hari
+          # build-validate.log # Jalur ke log build rilis
+          # release-build.log # Jalur ke log arsip
   
   # Job 3: Development Build (hanya di develop branch)
   build-dev:
@@ -370,15 +381,18 @@ jobs:
       - name: Build Development Build # Membangun build development 
         run: |
           echo "Building development build..."
+
+          set -o pipefail
+
           xcodebuild clean build \
             -project $PROJECT_NAME \
             -scheme $BUILD_SCHEME \
             -configuration $BUILD_CONFIG \
             -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_ALLOWED=NO \
-            | tee dev-build.log \
-            | xcpretty --color
+            CODE_SIGNING_ALLOWED=NO | \
+            tee dev-build.log | \
+            xcpretty --color
           
           # Check exit code
           if [ ${PIPESTATUS[0]} -ne 0 ]; then
