@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.7.1...v0.8.0) (2025-12-08)
+
+
+### Features
+
+* add automatic Info.plist update ([#50](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/50)) ([6a433bc](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/6a433bc2c2baa89eb4b631e8d3b715010402e604))
+
 ## [0.7.1](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.7.0...v0.7.1) (2025-12-08)
 
 
