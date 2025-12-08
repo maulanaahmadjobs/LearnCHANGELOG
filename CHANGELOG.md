@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.8.0...v0.8.1) (2025-12-08)
+
+
+### Bug Fixes
+
+* update ci dan release ([#52](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/52)) ([5b4a5df](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/5b4a5dfd0286245ccb9b39f1e4c329ec0c76a29a))
+
 ## [0.8.0](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.7.1...v0.8.0) (2025-12-08)
 
 
