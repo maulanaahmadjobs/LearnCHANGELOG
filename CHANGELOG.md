@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.2](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.6.1...v0.6.2) (2025-12-06)
+
+
+### Bug Fixes
+
+* development ([#34](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/34)) ([df99f90](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/df99f9063bdd16a58370c75c7163a15219685c1c))
+
+## [0.6.1](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.6.0...v0.6.1) (2025-12-06)
+
+
+### Bug Fixes
+
+* to GITHUB_OUTPUT development ([e963c9a](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/e963c9a3757938c2253f6e0589359857e5ca93a7))
+
 ## [0.6.0](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.5.1...v0.6.0) (2025-12-04)
 
 
