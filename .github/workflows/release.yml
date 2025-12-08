@@ -35,6 +35,25 @@ jobs:
         # Token untuk membuat PR dan release
           token: ${{ secrets.GITHUB_TOKEN }}
 
+
+        # Update Info.plist setelah release dibuat
+      - name: Checkout code
+        if: steps.release.outputs.release_created
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          
+      - name: Update Info.plist
+        if: steps.release.outputs.release_created
+        run: |
+          VERSION="${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" LearnCHANGELOG/Info.plist
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add LearnCHANGELOG/Info.plist
+          git commit -m "chore: update Info.plist to $VERSION [skip ci]"
+          git push
+
       # Optional: Tampilkan output untuk debugging
       - name: Show Release Output
         if: steps.release.outputs.release_created
