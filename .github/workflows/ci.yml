@@ -288,30 +288,31 @@ jobs:
       - name: Install xcpretty
         run: gem install xcpretty
       
-      - name: Validate Release Build # Build validasi sebelum archip
-        run: |
-          echo "Validating release build configuration..."
+      # # Optional: Validate Release Build Configuration sebelum membangun arsip
+      # - name: Validate Release Build # Build validasi sebelum archip
+      #   run: |
+      #     echo "Validating release build configuration..."
 
-          set -o pipefail
+      #     set -o pipefail
 
-          xcodebuild build \
-            -project $PROJECT_NAME \
-            -scheme $BUILD_SCHEME \
-            -configuration Release \
-            -destination "generic/platform=iOS" \
-            CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO | \
-            tee build-validate.log | \
-            xcpretty --color
+      #     xcodebuild build \
+      #       -project $PROJECT_NAME \
+      #       -scheme $BUILD_SCHEME \
+      #       -configuration Release \
+      #       -destination "generic/platform=iOS" \
+      #       CODE_SIGN_IDENTITY="-" \
+      #       CODE_SIGNING_REQUIRED=NO \
+      #       CODE_SIGNING_ALLOWED=NO | \
+      #       tee build-validate.log | \
+      #       xcpretty --color
           
-          # Check exit code
-          if [ ${PIPESTATUS[0]} -ne 0 ]; then
-            echo "Release build validation failed. Check build-validate.log"
-            exit 1
-          fi
+      #     # Check exit code
+      #     if [ ${PIPESTATUS[0]} -ne 0 ]; then
+      #       echo "Release build validation failed. Check build-validate.log"
+      #       exit 1
+      #     fi
 
-          echo "Release build configuration validated successfully!"
+      #     echo "Release build configuration validated successfully!"
           
       - name: Build Release Archive # Membangun arsip rilis tanpa penandatanganan kode
         run: |
@@ -327,7 +328,7 @@ jobs:
             -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_ALLOWED=NO | \
-            tee archive.log | \
+            tee release-build.log | \
             xcpretty --color
           
           # Check exit code
@@ -344,9 +345,10 @@ jobs:
           name: LearnCHANGELOG-Release-${{ github.sha }} # Nama artefak dengan SHA komit
           path: |
            build/LearnCHANGELOG.xcarchive # Jalur ke arsip yang akan diunggah
-           release-build.log # Jalur ke log build rilis
-           archive.log # Jalur ke log arsip
+           *.log # Upload semua file .log
           retention-days: 30 # Simpan artefak selama 30 hari
+          # build-validate.log # Jalur ke log build rilis
+          # release-build.log # Jalur ke log arsip
   
   # Job 3: Development Build (hanya di develop branch)
   build-dev:

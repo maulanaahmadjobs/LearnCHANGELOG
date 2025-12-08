@@ -161,10 +161,119 @@ jobs:
             echo "- **CHANGELOG.md** - User-facing changes only" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
+<<<<<<< HEAD
+        - name: Get PR Info
+          id: pr
+          run: |
+            echo "number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+            echo "title=${{ github.event.pull_request.title }}" >> $GITHUB_OUPUT
+            echo "author=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
+            echo "merged_at=${{ github.event.pull_request.merged_at }}" >> $GITHUB_OUTPUT
+            echo "base_sha=${{ github.event.pull_request.base.sha }}" >> $GITHUB_OUTPUT
+            echo "merge_sha=${{ github.event.pull_request.merge_commit_sha }}" >> $GITHUB_OUTPUT
+        
+        - name: Generate development version string
+          id: version
+          run: |
+            DATE=$(date +'%Y.%m.%d')
+            COUNT=$(git rev-list --count HEAD)
+            VERSION="develop-${DATE}.${COUNT}"
+            echo "value=$VERSION" >> $GITHUB_OUTPUT
+            
+        - name: Collect commit messages
+          id: collect
+          run: |
+            COMMITS=$(git log ${{ steps.pr.outputs.base_sha }}..${{ steps.pr.outputs.merge_sha }} --pretty=format:"%s|%h")
+            
+            FEATURES=""
+            FIXES=""
+            CHORES=""
+            REFACTORS=""
+            OTHERS=""
+            
+            # IFS=$'\n' untuk handle newline
+            while IFS=$'\n' read -r line; do
+              MSG=$(echo "$line" | cut -d '|' -f1)
+              HASH=$(echo "$line" | cut -d '|' -f2)
+              LINK="https://github.com/${{ github.repository }}/commit/$HASH"
+              
+              case "$MSG" in
+                feat:*)
+                  FEATURES="$FEATURES\n* ${MSG#feat: } ($LINK)"
+                  ;;
+                fix:*)
+                  FIXES="$FIXES\n* ${MSG#fix: } ($LINK)" 
+                  ;;
+                chore:*)
+                  CHORES="$CHORES\n* ${MSG#chore: } ($LINK)"
+                  ;;
+                refactor:*)
+                  REFACTORS="$REFACTORS\n* ${MSG#refactor: } ($LINK)"
+                  ;;
+                *)
+                  OTHER="$OTHERS\n* $MSG ($LINK)"
+                  ;;
+              esac
+              done <<< "$COMMITS"
+
+              
+            {
+            echo "feature<<EOF"
+            echo -e "$FEATURES"
+            echo "EOF"
+
+            echo "fix<<EOF"
+            echo -e "$FIXES"
+            echo "EOF"
+
+            echo "chore<<EOF"
+            echo -e "$CHORES"
+            echo "EOF"
+
+            echo "refactor<<EOF"
+            echo -e "$REFACTORS"
+            echo "EOF"
+
+            echo "other<<EOF"
+            echo -e "$OTHERS"
+            echo "EOF"
+            } >> $GITHUB_OUTPUT
+        
+        - name: Write CHANGELOG-DEV.md
+          run: |
+            VERSION="${{ steps.version.outputs.value }}"
+            BASE="${{ steps.pr.outputs.base_sha }}"
+            MERGE="${{ steps.pr.outputs.merge_sha }}"
+            COMPARE_URL="https://github.com/${{ github.repository }}/pull/${BASE}..${MERGE}"
+
+            {
+              echo "## [$VERSION] ($COMPARE_URL)"
+              echo ""
+              [[ -n "${{ steps.collect.outputs.feat }}" ]] && echo "### Features" && echo -e "${{ steps.collect.outputs.feat }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.fix }}" ]] && echo "### Bug Fixes" && echo -e "${{ steps.collect.outputs.fix }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.chore }}" ]] && echo "### Chores" && echo -e "${{ steps.collect.outputs.chore }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.refactor }}" ]] && echo "### Refactors" && echo -e "${{ steps.collect.outputs.refactor }}" && echo ""
+              [[ -n "${{ steps.collect.outputs.other }}" ]] && echo "### Others" && echo -e "${{ steps.collect.outputs.other }}" && echo ""
+              echo ""
+              echo "---"
+              echo ""
+            } | cat - CHANGELOG-DEV.md > temp && mv temp CHANGELOG-DEV.md
+        
+        - name: Commit and push changelog
+          run: |
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add CHANGELOG-DEV.md
+            
+            if git diff --cached --quiet; then
+               echo "No changes to commit"
+               exit 0
+=======
             if [ "${{ github.event_name }}" == "pull_request" ]; then
               echo "**Triggered by:** PR #${{ github.event.pull_request.number }} merged to \`${{ github.event.pull_request.base.ref }}\`" >> $GITHUB_STEP_SUMMARY
             else
               echo "**Triggered by:** Push to \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+>>>>>>> origin/develop
             fi
           else
             echo "###  No Changes" >> $GITHUB_STEP_SUMMARY
