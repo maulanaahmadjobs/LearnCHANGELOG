@@ -202,12 +202,16 @@ git tag -l | tail -5  # Lihat 5 tag terakhir
 ```
 
 4. Konfigurasi Release-Please
+
 File-File Penting
+
+```swift
 project-root/
 ├── release-please-config.json
 ├── .release-please-manifest.json
 └── .github/workflows/
     └── release.yml
+``` 
 release-please-config.json (Contoh)
 
 ```swift
