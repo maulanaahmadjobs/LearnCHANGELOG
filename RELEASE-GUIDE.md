@@ -359,4 +359,4 @@ Setiap package bisa punya versi sendiri dan release terpisah.
   - Conventional Commits: https://www.conventionalcommits.org/
   - Release-Please Docs: https://github.com/googleapis/release-please
   - Semantic Versioning: https://semver.org/
-  - GitHub Actions: https://docs.github.com/en/actions
+  - GitHub Actions: https://docs.github.com/en/actions 
