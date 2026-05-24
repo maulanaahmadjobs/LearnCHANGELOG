@@ -31,3 +31,4 @@
 ### ✨ Features
 
 * add automatic Info.plist update ([#50](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/50)) ([6a433bc](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/6a433bc))
+

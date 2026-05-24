@@ -20,9 +20,6 @@ permissions:
 
 jobs:
   release-please:
-<<<<<<< Updated upstream
-    runs-on: ubuntu-latest
-=======
     runs-on: macos-15
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
@@ -31,7 +28,6 @@ jobs:
       minor: ${{ steps.release.outputs.minor }}
       patch: ${{ steps.release.outputs.patch }}
 
->>>>>>> Stashed changes
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -41,16 +37,6 @@ jobs:
           target-branch: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
-<<<<<<< Updated upstream
-      # Optional: Tampilkan output untuk debugging
-      - name: Show Release Output
-          if: steps.release.outputs.release_created
-          run: |
-            echo "Release created: ${{ steps.release.ouputs.release_created }}"
-            echo "Tag name: ${{ steps.release.outputs.tag_name }}"
-            echo "Version: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}"
-            echo "Upload URL: ${{ steps.release.outputs.upload_url }}"
-=======
       - name: Checkout code
         if: steps.release.outputs.release_created
         uses: actions/checkout@v4
@@ -77,4 +63,3 @@ jobs:
           echo "Release created: ${{ steps.release.outputs.release_created }}"
           echo "Tag name: ${{ steps.release.outputs.tag_name }}"
           echo "Version: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}"
->>>>>>> Stashed changes
