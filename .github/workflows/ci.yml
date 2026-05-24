@@ -189,7 +189,7 @@ jobs:
           xcodebuild build \
             -project $PROJECT_NAME \
             -scheme $BUILD_SCHEME \
-            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_ID,arch=arm64" \
             -configuration ${{ needs.setup.outputs.build-config }} \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
@@ -213,7 +213,7 @@ jobs:
           xcodebuild clean test \
             -project $PROJECT_NAME \
             -scheme $BUILD_SCHEME \
-            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_ID,arch=arm64" \
             -configuration ${{ needs.setup.outputs.build-config }} \
             -skip-testing:LearnCHANGELOGUITests \
             -only-testing:LearnCHANGELOGTests \

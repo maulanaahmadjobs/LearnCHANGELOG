@@ -94,14 +94,25 @@ Breaking change memicu **MAJOR version bump** (1.0.0 → 2.0.0). Ada 2 cara:
 
 **Cara 1: Gunakan `!` setelah type**
 
+Cara 1: Gunakan `!` setelah type
+
+```swift
+feat!: hapus deprecated API
+
+Fitur lama sudah tidak tersedia lagi dan tidak bisa di-downgrade.
 ```
 feat!: hapus deprecated API
 
 Fitur lama sudah tidak tersedia lagi dan tidak bisa di-downgrade.
 ```
+## 3. Alur Lengkap: Dari Commit hingga Release
+
+### Step 1: Buat Commit dengan Conventional Commits
 
 **Cara 2: Gunakan `BREAKING CHANGE:` di footer**
 
+# Commit dengan format yang benar
+git commit -m "feat(payment): add Stripe integration"
 ```
 feat: refactor authentication system
 
@@ -218,7 +229,10 @@ git merge main
 git push origin develop
 ```
 
----
+1. Membuat Git tag dengan format v1.1.0
+2. Publish GitHub Release di halaman Releases
+3. Update CHANGELOG.md di branch main
+4. Trigger publish workflow (jika ada untuk npm package, gem, dll)
 
 ## 4. Develop Changelog (CHANGELOG-DEVELOP.md)
 
@@ -245,7 +259,8 @@ Setiap push ke branch `develop`, workflow `release-develop.yml` otomatis:
 
 >  `chore`, `ci`, `test`, `style` juga tidak muncul di `CHANGELOG-DEVELOP.md`. Konsisten dengan `CHANGELOG.md`.
 
----
+# Tarik semua update dari remote termasuk tags
+git pull origin main --tags
 
 ## 5. Konfigurasi File
 
@@ -307,7 +322,7 @@ LearnCHANGELOG/
 
 > File ini otomatis di-update oleh release-please. **Jangan edit manual.**
 
----
+`.release-please-manifest.json` (Tracking Versi)
 
 ## 6. Tips & Best Practices
 
@@ -330,7 +345,7 @@ LearnCHANGELOG/
 - Jangan edit `.release-please-manifest.json` secara manual
 - Jangan hapus branch Release PR setelah merge
 
----
+5. Tips & Best Practices
 
 ## 7. Manual Trigger Release
 
@@ -344,7 +359,6 @@ Jika ingin trigger release-please workflow secara manual (misal setelah fix bug 
 
 Release-please akan scan ulang dan membuat Release PR jika ada perubahan yang belum di-release.
 
----
 
 ## 8. Troubleshooting
 
