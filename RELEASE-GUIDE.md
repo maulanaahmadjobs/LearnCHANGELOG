@@ -74,17 +74,17 @@ docs: update README dengan instruksi setup
 
 ### Type yang Tersedia
 
-| Type       | Efek Versi          | Muncul di CHANGELOG | Keterangan                         |
-|------------|---------------------|---------------------|------------------------------------|
-| `feat`     | Minor (1.0 → 1.1)   | ✅ Ya               | Fitur baru                         |
-| `fix`      | Patch (1.0 → 1.0.1) | ✅ Ya               | Bug fix                            |
-| `perf`     | Patch               | ✅ Ya               | Performance improvement            |
-| `refactor` | Patch               | ✅ Ya               | Refactor tanpa fitur/fix baru      |
-| `docs`     | Patch               | ✅ Ya               | Perubahan dokumentasi              |
-| `style`    | ❌ Tidak naik       | ❌ Tidak            | Format code, spacing               |
-| `test`     | ❌ Tidak naik       | ❌ Tidak            | Tambah/perbaiki unit test          |
-| `chore`    | ❌ Tidak naik       | ❌ Tidak            | Update build tools, dependencies   |
-| `ci`       | ❌ Tidak naik       | ❌ Tidak            | Perubahan GitHub Actions, workflow |
+| Type       | Efek Versi          | Muncul di CHANGELOG      | Keterangan                        |
+|------------|---------------------|--------------------------|-----------------------------------|
+| `feat`     | Minor (1.0 → 1.1)   | ✅ Ya                    | Fitur baru                        |
+| `fix`      | Patch (1.0 → 1.0.1) | ✅ Ya                    | Bug fix                           |
+| `perf`     | Patch               | ✅ Ya                    | Performance improvement           |
+| `refactor` | Patch               | ✅ Ya                    | Refactor tanpa fitur/fix baru     |
+| `docs`     | Patch               | ✅ Ya                    | Perubahan dokumentasi             |
+| `style`    | ❌ Tidak naik       | ❌ Tidak                 | Format code, spacing              |
+| `test`     | ❌ Tidak naik       | ❌ Tidak                 | Tambah/perbaiki unit test         |
+| `chore`    | ❌ Tidak naik       | ❌ Tidak                 | Update build tools, dependencies  |
+| `ci`       | ❌ Tidak naik       | ❌ Tidak                 | Perubahan GitHub Actions, workflow|
 
 > 💡 `chore`, `ci`, `test`, `style` tidak muncul di CHANGELOG manapun — baik `CHANGELOG.md` maupun `CHANGELOG-DEVELOP.md`. Gunakan ini untuk perubahan internal yang tidak perlu diketahui pengguna.
 
