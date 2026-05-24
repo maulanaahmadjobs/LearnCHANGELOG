@@ -1,0 +1,254 @@
+#
+#  release-develop.yml
+#  LearnCHANGELOG
+#
+#  Otomatis update CHANGELOG-DEVELOP.md setiap push ke develop
+#  Tidak membuat GitHub Release atau tag — hanya changelog internal
+#
+
+name: Release Develop Changelog
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Job 1: Update CHANGELOG-DEVELOP.md
+  # ─────────────────────────────────────────────
+  changelog-develop:
+    name: Update CHANGELOG-DEVELOP.md
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.check.outputs.has_changes }}
+      version_bump: ${{ steps.check.outputs.version_bump }}
+      next_version: ${{ steps.check.outputs.next_version }}
+
+    steps:
+      - name: Checkout develop
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0                      # Butuh full history untuk generate changelog
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install conventional-changelog-cli
+        run: npm install -g conventional-changelog-cli conventional-recommended-bump
+
+      # Baca versi saat ini dari manifest (ikuti versi main/production)
+      - name: Read current version
+        id: current
+        run: |
+          if [ -f ".release-please-manifest.json" ]; then
+            CURRENT=$(cat .release-please-manifest.json | python3 -c "import sys,json; print(json.load(sys.stdin)['.'])")
+          else
+            CURRENT="0.0.0"
+          fi
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT"
+
+      # Cek apakah ada conventional commits sejak tag terakhir
+      - name: Check for releasable commits
+        id: check
+        run: |
+          # Dapatkan tag terakhir
+          LAST_TAG=$(git tag -l "v*" --sort=-version:refname | head -1)
+          echo "Last tag: $LAST_TAG"
+
+          if [ -z "$LAST_TAG" ]; then
+            COMMIT_RANGE="HEAD"
+          else
+            COMMIT_RANGE="${LAST_TAG}..HEAD"
+          fi
+
+          # Cek commit types yang masuk ke develop sejak tag terakhir
+          COMMITS=$(git log $COMMIT_RANGE --oneline --format="%s" 2>/dev/null || echo "")
+          echo "Commits since last tag:"
+          echo "$COMMITS"
+
+          HAS_FEAT=$(echo "$COMMITS" | grep -c "^feat" || true)
+          HAS_FIX=$(echo "$COMMITS" | grep -c "^fix" || true)
+          HAS_BREAKING=$(echo "$COMMITS" | grep -c "BREAKING CHANGE\|^feat!\|^fix!" || true)
+          HAS_PERF=$(echo "$COMMITS" | grep -c "^perf" || true)
+
+          TOTAL_RELEASABLE=$((HAS_FEAT + HAS_FIX + HAS_BREAKING + HAS_PERF))
+          echo "Releasable commits: $TOTAL_RELEASABLE (feat: $HAS_FEAT, fix: $HAS_FIX, breaking: $HAS_BREAKING, perf: $HAS_PERF)"
+
+          CURRENT="${{ steps.current.outputs.current }}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          # Tentukan bump type
+          if [ "$HAS_BREAKING" -gt 0 ]; then
+            BUMP="major"
+            NEXT="$((MAJOR + 1)).0.0"
+          elif [ "$HAS_FEAT" -gt 0 ]; then
+            BUMP="minor"
+            NEXT="${MAJOR}.$((MINOR + 1)).0"
+          elif [ "$HAS_FIX" -gt 0 ] || [ "$HAS_PERF" -gt 0 ]; then
+            BUMP="patch"
+            NEXT="${MAJOR}.${MINOR}.$((PATCH + 1))"
+          else
+            BUMP="none"
+            NEXT="$CURRENT"
+          fi
+
+          echo "Version bump: $BUMP → $NEXT"
+          echo "has_changes=$( [ $TOTAL_RELEASABLE -gt 0 ] && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
+          echo "version_bump=$BUMP" >> $GITHUB_OUTPUT
+          echo "next_version=$NEXT" >> $GITHUB_OUTPUT
+
+      # Generate changelog untuk develop
+      - name: Generate CHANGELOG-DEVELOP.md
+        if: steps.check.outputs.has_changes == 'true'
+        run: |
+          NEXT_VERSION="${{ steps.check.outputs.next_version }}"
+          BUMP="${{ steps.check.outputs.version_bump }}"
+          TODAY=$(date +"%Y-%m-%d")
+          LAST_TAG=$(git tag -l "v*" --sort=-version:refname | head -1)
+          REPO_URL="https://github.com/${{ github.repository }}"
+
+          echo "Generating CHANGELOG-DEVELOP.md for v$NEXT_VERSION ($BUMP bump)"
+
+          # Buat header changelog develop
+          cat > CHANGELOG-DEVELOP.md << HEADER
+# Changelog - Develop Branch
+
+> **Info**: Ini adalah changelog untuk branch \`develop\` (staging/pre-release).
+> Changelog production tersedia di [CHANGELOG.md](CHANGELOG.md).
+> Versi ini belum resmi dirilis dan bisa berubah.
+
+HEADER
+
+          # Buat entry versi baru
+          if [ -z "$LAST_TAG" ]; then
+            COMPARE_URL="$REPO_URL/commits/develop"
+            COMPARE_TEXT="Initial development"
+          else
+            COMPARE_URL="$REPO_URL/compare/${LAST_TAG}...develop"
+            COMPARE_TEXT="${LAST_TAG}...develop"
+          fi
+
+          cat >> CHANGELOG-DEVELOP.md << ENTRY
+## [${NEXT_VERSION}-dev] (${TODAY}) — unreleased
+
+> [Compare changes]($COMPARE_URL)
+
+ENTRY
+
+          # Parse commits per type
+          if [ -z "$LAST_TAG" ]; then
+            COMMIT_RANGE="HEAD"
+          else
+            COMMIT_RANGE="${LAST_TAG}..HEAD"
+          fi
+
+          # Features
+          FEATURES=$(git log $COMMIT_RANGE --format="* %s ([%h]($REPO_URL/commit/%H))" | grep "^\* feat" | sed 's/^\* feat[^:]*: //' | sed 's/^\* feat: //')
+          if [ -n "$FEATURES" ]; then
+            echo "### Features" >> CHANGELOG-DEVELOP.md
+            echo "" >> CHANGELOG-DEVELOP.md
+            echo "$FEATURES" >> CHANGELOG-DEVELOP.md
+            echo "" >> CHANGELOG-DEVELOP.md
+          fi
+
+          # Bug Fixes
+          FIXES=$(git log $COMMIT_RANGE --format="* %s ([%h]($REPO_URL/commit/%H))" | grep "^\* fix" | sed 's/^\* fix[^:]*: //' | sed 's/^\* fix: //')
+          if [ -n "$FIXES" ]; then
+            echo "### Bug Fixes" >> CHANGELOG-DEVELOP.md
+            echo "" >> CHANGELOG-DEVELOP.md
+            echo "$FIXES" >> CHANGELOG-DEVELOP.md
+            echo "" >> CHANGELOG-DEVELOP.md
+          fi
+
+          # Performance
+          PERFS=$(git log $COMMIT_RANGE --format="* %s ([%h]($REPO_URL/commit/%H))" | grep "^\* perf" | sed 's/^\* perf[^:]*: //' | sed 's/^\* perf: //')
+          if [ -n "$PERFS" ]; then
+            echo "### Performance Improvements" >> CHANGELOG-DEVELOP.md
+            echo "" >> CHANGELOG-DEVELOP.md
+            echo "$PERFS" >> CHANGELOG-DEVELOP.md
+            echo "" >> CHANGELOG-DEVELOP.md
+          fi
+
+          # Other changes
+          OTHERS=$(git log $COMMIT_RANGE --format="* %s ([%h]($REPO_URL/commit/%H))" | grep -v "^\* feat\|^\* fix\|^\* perf\|^\* chore\|^\* docs\|^\* ci\|^\* test\|^\* style\|^\* refactor" || true)
+          if [ -n "$OTHERS" ]; then
+            echo "### Other Changes" >> CHANGELOG-DEVELOP.md
+            echo "" >> CHANGELOG-DEVELOP.md
+            echo "$OTHERS" >> CHANGELOG-DEVELOP.md
+            echo "" >> CHANGELOG-DEVELOP.md
+          fi
+
+          # Append existing production CHANGELOG jika ada
+          if [ -f "CHANGELOG.md" ]; then
+            echo "---" >> CHANGELOG-DEVELOP.md
+            echo "" >> CHANGELOG-DEVELOP.md
+            echo "## Previous Production Releases" >> CHANGELOG-DEVELOP.md
+            echo "" >> CHANGELOG-DEVELOP.md
+            tail -n +3 CHANGELOG.md >> CHANGELOG-DEVELOP.md
+          fi
+
+          echo "=== Generated CHANGELOG-DEVELOP.md ==="
+          head -60 CHANGELOG-DEVELOP.md
+
+      - name: No releasable commits
+        if: steps.check.outputs.has_changes == 'false'
+        run: |
+          echo "No feat/fix/perf commits found since last release."
+          echo "Updating CHANGELOG-DEVELOP.md with current state..."
+          TODAY=$(date +"%Y-%m-%d")
+          cat > CHANGELOG-DEVELOP.md << NO_CHANGE
+# Changelog - Develop Branch
+
+> **Info**: Ini adalah changelog untuk branch \`develop\` (staging/pre-release).
+
+## No unreleased changes (${TODAY})
+
+Belum ada \`feat\`, \`fix\`, atau \`perf\` commits sejak release terakhir.
+
+---
+
+NO_CHANGE
+          if [ -f "CHANGELOG.md" ]; then
+            echo "## Previous Production Releases" >> CHANGELOG-DEVELOP.md
+            echo "" >> CHANGELOG-DEVELOP.md
+            tail -n +3 CHANGELOG.md >> CHANGELOG-DEVELOP.md
+          fi
+
+      # Commit CHANGELOG-DEVELOP.md ke develop
+      - name: Commit CHANGELOG-DEVELOP.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add CHANGELOG-DEVELOP.md
+
+          if git diff --staged --quiet; then
+            echo "No changes to CHANGELOG-DEVELOP.md"
+          else
+            NEXT="${{ steps.check.outputs.next_version }}"
+            BUMP="${{ steps.check.outputs.version_bump }}"
+            git commit -m "docs: update CHANGELOG-DEVELOP.md for v${NEXT}-dev (${BUMP}) [skip ci]"
+            git push origin develop
+            echo "CHANGELOG-DEVELOP.md updated and pushed to develop"
+          fi
+
+      - name: Summary
+        run: |
+          echo "### Develop Changelog Update" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | develop |" >> $GITHUB_STEP_SUMMARY
+          echo "| Has changes | ${{ steps.check.outputs.has_changes }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version bump | ${{ steps.check.outputs.version_bump }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Next version | ${{ steps.check.outputs.next_version }}-dev |" >> $GITHUB_STEP_SUMMARY
