@@ -3,6 +3,7 @@
 #  LearnCHANGELOG
 #
 #  Created by west on 30/11/25.
+#  Updated: fix release-please + Info.plist update flow
 #
 
 name: Release Changelog
@@ -11,7 +12,6 @@ on:
   push:
     branches:
       - main
-      - release/*
   workflow_dispatch:
 
 permissions:
@@ -21,32 +21,35 @@ permissions:
 jobs:
   release-please:
     runs-on: macos-15
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      major: ${{ steps.release.outputs.major }}
+      minor: ${{ steps.release.outputs.minor }}
+      patch: ${{ steps.release.outputs.patch }}
+
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-        # Lokasi file configurasi
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-         
-        # Branch target
-          target-branch: ${{ github.ref_name }}
-          
-        # Token untuk membuat PR dan release
+          target-branch: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
-
-        # Update Info.plist setelah release dibuat
       - name: Checkout code
         if: steps.release.outputs.release_created
         uses: actions/checkout@v4
         with:
           ref: main
-          
-      - name: Update Info.plist
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Update Info.plist dengan versi baru setelah release dibuat
+      - name: Update Info.plist version
         if: steps.release.outputs.release_created
         run: |
           VERSION="${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}"
+          echo "Updating Info.plist to version $VERSION"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" LearnCHANGELOG/Info.plist
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -54,11 +57,9 @@ jobs:
           git commit -m "chore: update Info.plist to $VERSION [skip ci]"
           git push
 
-      # Optional: Tampilkan output untuk debugging
       - name: Show Release Output
         if: steps.release.outputs.release_created
         run: |
-            echo "Release created: ${{ steps.release.ouputs.release_created }}"
-            echo "Tag name: ${{ steps.release.outputs.tag_name }}"
-            echo "Version: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}"
-            echo "Upload URL: ${{ steps.release.outputs.upload_url }}"
+          echo "Release created: ${{ steps.release.outputs.release_created }}"
+          echo "Tag name: ${{ steps.release.outputs.tag_name }}"
+          echo "Version: ${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}"
