@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.8.2](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.8.1...v0.8.2) (2026-05-24)
+
+
+### 📝 Documentation
+
+* (release-guide) ([c47c122](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/c47c122992ea98385e91b25ffb614094c5c92da6))
+* (release-guide) ([d2ca74a](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/d2ca74a1955eca6e5d27147e5f1f0ad9ae3b3110))
+* update release guide, fix release.yml, add develop changelog workflow ([#56](https://github.com/maulanaahmadjobs/LearnCHANGELOG/issues/56)) ([9d69b98](https://github.com/maulanaahmadjobs/LearnCHANGELOG/commit/9d69b98d79bcf60f19c99630ad925c4835b813c5))
+
 ## [0.8.1](https://github.com/maulanaahmadjobs/LearnCHANGELOG/compare/v0.8.0...v0.8.1) (2025-12-08)
 
 
